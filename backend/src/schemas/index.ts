@@ -11,6 +11,8 @@ export const rawPublicationSchema = z.object({
   status: z.enum(['published', 'draft', 'archived', 'deleted']),
 });
 
+export const rawPublicationArraySchema = z.array(rawPublicationSchema);
+
 // ─── Domain types ────────────────────────────────────────────────────────────
 
 export const publicationSchema = z.object({
@@ -46,6 +48,13 @@ export const cacheEntrySchema = z.object({
   timestamp: z.number(),
 });
 
+// ─── Sanitizer internal schemas ──────────────────────────────────────────────
+
+export const mappingsSchema = z.object({
+  project_mapping: z.record(z.string()),
+  category_mapping: z.record(z.string()),
+});
+
 // ─── Request body schemas ────────────────────────────────────────────────────
 
 export const searchRequestSchema = z.object({
@@ -78,3 +87,4 @@ export type CacheEntry      = z.infer<typeof cacheEntrySchema>;
 export type SearchRequest   = z.infer<typeof searchRequestSchema>;
 export type SearchResponse  = z.infer<typeof searchResponseSchema>;
 export type HealthResponse  = z.infer<typeof healthResponseSchema>;
+export type Mappings        = z.infer<typeof mappingsSchema>;

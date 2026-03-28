@@ -1,7 +1,7 @@
-import { z } from 'zod';
 import { openai } from '../lib/openai';
 import { withRetry } from '../lib/retry';
-import { rawPublicationSchema, RawPublication, Publication } from '../schemas';
+import { mappingsSchema, rawPublicationArraySchema } from '../schemas';
+import type { Mappings, RawPublication, Publication } from '../types';
 
 // ─── Pass 1: Discover canonical names from raw unique values ─────────────────
 
@@ -60,11 +60,6 @@ Return ONLY valid JSON: { "publications": [...] }
 Each item: { "id": string, "title": string, "project": string, "category": string }
 `.trim();
 
-interface Mappings {
-  project_mapping: Record<string, string>;
-  category_mapping: Record<string, string>;
-}
-
 async function discoverMappings(rawDocs: RawPublication[]): Promise<Mappings> {
   const uniqueProjects = Array.from(new Set(rawDocs.map((d) => d.project_name)));
   const uniqueCategories = Array.from(
@@ -92,10 +87,7 @@ async function discoverMappings(rawDocs: RawPublication[]): Promise<Mappings> {
   const raw = response.choices[0].message.content;
   if (!raw) throw new Error('[Sanitizer] Pass 1: empty response from OpenAI');
 
-  const parsed = JSON.parse(raw) as Mappings;
-  if (!parsed.project_mapping || !parsed.category_mapping) {
-    throw new Error('[Sanitizer] Pass 1: response missing project_mapping or category_mapping');
-  }
+  const parsed = mappingsSchema.parse(JSON.parse(raw));
 
   // Log the discovered mappings — impressive demo moment
   const canonicalProjects = Array.from(new Set(Object.values(parsed.project_mapping)));
@@ -161,7 +153,7 @@ async function cleanDocuments(
  * Catches malformed seed data at the boundary rather than failing deep in a service.
  */
 export function parseRawPublications(data: unknown): RawPublication[] {
-  return z.array(rawPublicationSchema).parse(data);
+  return rawPublicationArraySchema.parse(data);
 }
 
 export async function sanitizePublications(

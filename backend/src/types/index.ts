@@ -8,4 +8,5 @@ export type {
   SearchRequest,
   SearchResponse,
   HealthResponse,
+  Mappings,
 } from '../schemas';
