@@ -3,7 +3,8 @@ import { semanticSearch } from '../services/searchService';
 import { vectorStore } from '../services/vectorStore';
 import { validate } from '../lib/validate';
 import { ok, sendError } from '../lib/response';
-import { searchRequestSchema, SearchRequest } from '../schemas';
+import { searchRequestSchema } from '../schemas';
+import type { SearchRequest } from '../types';
 
 const router = Router();
 
