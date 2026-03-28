@@ -32,7 +32,7 @@ export const ProjectFilter: React.FC<Props> = ({
         </p>
         <button
           onClick={() => onCategoryChange('')}
-          className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors text-left ${
+          className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer text-left ${
             !selectedCategory
               ? 'bg-brand-50 text-brand-700 font-medium'
               : 'text-gray-600 hover:bg-gray-50'
@@ -45,7 +45,7 @@ export const ProjectFilter: React.FC<Props> = ({
           <button
             key={cat}
             onClick={() => onCategoryChange(cat)}
-            className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors text-left ${
+            className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer text-left ${
               selectedCategory === cat
                 ? 'bg-brand-50 text-brand-700 font-medium'
                 : 'text-gray-600 hover:bg-gray-50'
@@ -63,7 +63,7 @@ export const ProjectFilter: React.FC<Props> = ({
         </p>
         <button
           onClick={() => onProjectChange('')}
-          className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors text-left ${
+          className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer text-left ${
             !selectedProject
               ? 'bg-brand-50 text-brand-700 font-medium'
               : 'text-gray-600 hover:bg-gray-50'
@@ -75,7 +75,7 @@ export const ProjectFilter: React.FC<Props> = ({
           <button
             key={project}
             onClick={() => onProjectChange(project)}
-            className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+            className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer ${
               selectedProject === project
                 ? 'bg-brand-50 text-brand-700 font-medium'
                 : 'text-gray-600 hover:bg-gray-50'
