@@ -1,5 +1,4 @@
 import React from 'react';
-import { SEARCH_MAX_LENGTH } from '../../constants';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   leftSlot?: React.ReactNode;
@@ -16,7 +15,6 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       )}
       <input
         ref={ref}
-        maxLength={SEARCH_MAX_LENGTH}
         className={`
           w-full py-3.5 rounded-xl border border-gray-200 bg-white
           text-gray-900 placeholder-gray-400 text-[15px]
