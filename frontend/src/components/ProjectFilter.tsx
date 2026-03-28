@@ -1,6 +1,7 @@
 import React from 'react';
 import { useFetchMeta } from '../hooks/useFetchMeta';
 import { getCategoryDot } from '../constants';
+import { FilterButton } from './ui';
 
 interface Props {
   selectedProject: string;
@@ -30,30 +31,23 @@ export const ProjectFilter: React.FC<Props> = ({
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-1">
           Category
         </p>
-        <button
+        <FilterButton
+          selected={!selectedCategory}
           onClick={() => onCategoryChange('')}
-          className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer text-left ${
-            !selectedCategory
-              ? 'bg-brand-50 text-brand-700 font-medium'
-              : 'text-gray-600 hover:bg-gray-50'
-          }`}
+          className="justify-between"
         >
           <span>All</span>
           <span className="text-xs text-gray-400 tabular-nums">{totalCount}</span>
-        </button>
+        </FilterButton>
         {categories.map((cat) => (
-          <button
+          <FilterButton
             key={cat}
+            selected={selectedCategory === cat}
             onClick={() => onCategoryChange(cat)}
-            className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer text-left ${
-              selectedCategory === cat
-                ? 'bg-brand-50 text-brand-700 font-medium'
-                : 'text-gray-600 hover:bg-gray-50'
-            }`}
           >
             <span className={`w-2 h-2 rounded-full shrink-0 ${getCategoryDot(cat)}`} />
             <span>{cat}</span>
-          </button>
+          </FilterButton>
         ))}
       </div>
 
@@ -61,28 +55,20 @@ export const ProjectFilter: React.FC<Props> = ({
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-1">
           Project
         </p>
-        <button
+        <FilterButton
+          selected={!selectedProject}
           onClick={() => onProjectChange('')}
-          className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer text-left ${
-            !selectedProject
-              ? 'bg-brand-50 text-brand-700 font-medium'
-              : 'text-gray-600 hover:bg-gray-50'
-          }`}
         >
-          <span>All Projects</span>
-        </button>
+          All Projects
+        </FilterButton>
         {projects.map((project) => (
-          <button
+          <FilterButton
             key={project}
+            selected={selectedProject === project}
             onClick={() => onProjectChange(project)}
-            className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer ${
-              selectedProject === project
-                ? 'bg-brand-50 text-brand-700 font-medium'
-                : 'text-gray-600 hover:bg-gray-50'
-            }`}
           >
             {project}
-          </button>
+          </FilterButton>
         ))}
       </div>
     </div>
