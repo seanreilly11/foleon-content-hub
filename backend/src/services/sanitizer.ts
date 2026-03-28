@@ -1,6 +1,6 @@
 import { openai } from '../lib/openai';
 import { withRetry } from '../lib/retry';
-import { mappingsSchema, rawPublicationArraySchema } from '../schemas';
+import { cleanedPublicationsResponseSchema, mappingsSchema, rawPublicationArraySchema } from '../schemas';
 import type { Mappings, RawPublication, Publication } from '../types';
 
 // ─── Pass 1: Discover canonical names from raw unique values ─────────────────
@@ -118,8 +118,11 @@ async function cleanDocuments(
 ): Promise<Array<{ id: string; title: string; project: string; category: string }>> {
   console.log(`  [Pass 2] Cleaning ${prepped.length} publication titles...`);
 
-  const response = await withRetry(
-    () => openai.chat.completions.create({
+  // withRetry wraps both the API call and the Zod parse — if the model returns
+  // a malformed response, ZodError has no .status so withRetry will retry the
+  // whole block (re-call the model) rather than surfacing a cryptic parse failure.
+  const { publications } = await withRetry(async () => {
+    const response = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       temperature: 0,
       response_format: { type: 'json_object' },
@@ -127,23 +130,15 @@ async function cleanDocuments(
         { role: 'system', content: CLEANING_SYSTEM_PROMPT },
         { role: 'user', content: JSON.stringify({ ...mappings, publications: prepped }) },
       ],
-    }),
-    { label: 'Sanitizer Pass 2' }
-  );
+    });
 
-  const raw = response.choices[0].message.content;
-  if (!raw) throw new Error('[Sanitizer] Pass 2: empty response from OpenAI');
+    const raw = response.choices[0].message.content;
+    if (!raw) throw new Error('[Sanitizer] Pass 2: empty response from OpenAI');
 
-  const parsed = JSON.parse(raw);
-  const items = Array.isArray(parsed)
-    ? parsed
-    : parsed.publications ?? (Object.values(parsed)[0] as typeof parsed.publications);
+    return cleanedPublicationsResponseSchema.parse(JSON.parse(raw));
+  }, { label: 'Sanitizer Pass 2' });
 
-  if (!Array.isArray(items)) {
-    throw new Error('[Sanitizer] Pass 2: response is not an array');
-  }
-
-  return items;
+  return publications;
 }
 
 // ─── Public API ──────────────────────────────────────────────────────────────

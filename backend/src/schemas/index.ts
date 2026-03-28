@@ -55,6 +55,17 @@ export const mappingsSchema = z.object({
   category_mapping: z.record(z.string()),
 });
 
+const cleanedPublicationSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  project: z.string(),
+  category: z.string(),
+});
+
+export const cleanedPublicationsResponseSchema = z.object({
+  publications: z.array(cleanedPublicationSchema),
+});
+
 // ─── Request body schemas ────────────────────────────────────────────────────
 
 export const searchRequestSchema = z.object({
