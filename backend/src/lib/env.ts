@@ -13,3 +13,9 @@ export function validateEnv(): void {
     process.exit(1);
   }
 }
+
+/** Typed, centralised access to environment variables. Import from here — never read process.env directly in app code. */
+export const env = {
+  OPENAI_API_KEY: process.env.OPENAI_API_KEY as string,
+  ADMIN_KEY: process.env.ADMIN_KEY,
+} as const;

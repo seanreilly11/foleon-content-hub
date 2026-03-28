@@ -3,6 +3,7 @@ import { sanitizePublications, parseRawPublications } from '../services/sanitize
 import { vectorStore } from '../services/vectorStore';
 import { cacheService } from '../services/cacheService';
 import { ok, sendError } from '../lib/response';
+import { env } from '../lib/env';
 import rawData from '../data/publications.raw.json';
 
 const router = Router();
@@ -10,7 +11,7 @@ const router = Router();
 router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   // Simple admin key guard — in production use a proper auth layer
   const adminKey = req.headers['x-admin-key'];
-  if (!adminKey || adminKey !== process.env.ADMIN_KEY) {
+  if (!adminKey || adminKey !== env.ADMIN_KEY) {
     return sendError(res, 401, 'Unauthorised', 'UNAUTHORISED');
   }
 
