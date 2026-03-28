@@ -10,7 +10,6 @@ interface Props {
   loading: boolean;
   page: number;
   totalPages: number;
-  total: number;
   onPageChange: (p: number) => void;
   isSearchMode: boolean;
 }

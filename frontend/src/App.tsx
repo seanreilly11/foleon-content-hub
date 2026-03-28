@@ -93,7 +93,6 @@ export default function App() {
             loading={loading}
             page={page}
             totalPages={totalPages}
-            total={total}
             onPageChange={setPage}
             isSearchMode={isSearchMode}
           />
