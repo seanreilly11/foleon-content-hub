@@ -9,4 +9,5 @@ export type {
   SearchResponse,
   HealthResponse,
   Mappings,
+  StartupStage,
 } from '../schemas';

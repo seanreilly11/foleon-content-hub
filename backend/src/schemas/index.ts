@@ -48,6 +48,12 @@ export const cacheEntrySchema = z.object({
   timestamp: z.number(),
 });
 
+// ─── Startup stages ──────────────────────────────────────────────────────────
+// Must match the keys in the frontend's STARTUP_STAGE_LABELS constant.
+
+export const STARTUP_STAGES = ['initialising', 'sanitising', 'embedding', 'ready'] as const;
+export type StartupStage = typeof STARTUP_STAGES[number];
+
 // ─── Sanitizer internal schemas ──────────────────────────────────────────────
 
 export const mappingsSchema = z.object({

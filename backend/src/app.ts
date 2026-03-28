@@ -11,6 +11,7 @@ import { sanitizePublications, parseRawPublications } from './services/sanitizer
 import { vectorStore } from './services/vectorStore';
 import { errorHandler } from './middleware/errorHandler';
 import { ok } from './lib/response';
+import type { StartupStage } from './types';
 import publicationsRouter from './routes/publications';
 import metaRouter from './routes/meta';
 import searchRouter from './routes/search';
@@ -29,15 +30,13 @@ app.use(cors({
 app.use(express.json());
 
 // Track startup stage for the health endpoint
-let startupStage = 'initialising';
+let startupStage: StartupStage = 'initialising';
 
 // Health check — always available, even during the startup pipeline.
 // The frontend polls this before showing the main UI.
 app.get('/health', (_req, res) => {
-  res.json(ok({
-    ready: vectorStore.isReady(),
-    ...(vectorStore.isReady() ? {} : { startupStage }),
-  }));
+  const ready = vectorStore.isReady();
+  res.json(ok({ ready, ...(!ready && { startupStage }) }));
 });
 
 // NOTE: /api/publications/meta MUST be registered before /api/publications
