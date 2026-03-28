@@ -5,13 +5,16 @@ import { Pagination } from '../types';
 
 const router = Router();
 
+const MAX_PAGE_LIMIT = 200;
+const DEFAULT_PAGE_LIMIT = 20;
+
 router.get('/', (req: Request, res: Response) => {
   if (!vectorStore.isReady()) {
     return sendError(res, 503, 'Service initialising, please retry in a moment', 'NOT_READY');
   }
 
   const page = Math.max(1, parseInt(req.query.page as string) || 1);
-  const limit = Math.min(200, Math.max(1, parseInt(req.query.limit as string) || 20));
+  const limit = Math.min(MAX_PAGE_LIMIT, Math.max(1, parseInt(req.query.limit as string) || DEFAULT_PAGE_LIMIT));
   const projectFilter = req.query.project as string | undefined;
   const categoryFilter = req.query.category as string | undefined;
 
