@@ -1,0 +1,13 @@
+import { useMutation } from '@tanstack/react-query';
+import { apiPost, ApiResult } from '../lib/api';
+import { searchDataSchema, SearchData, SearchRequest } from '../schemas';
+
+export type { SearchRequest };
+
+export function useSearchMutation() {
+  // useMutation<TData, TError, TVariables>
+  // TData is ApiResult<SearchData> — { data: { items, cacheHit, latencyMs }, pagination: null }
+  return useMutation<ApiResult<SearchData>, Error, SearchRequest>({
+    mutationFn: (body) => apiPost('/api/search', body, searchDataSchema),
+  });
+}
