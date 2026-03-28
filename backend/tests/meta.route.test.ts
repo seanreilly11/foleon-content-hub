@@ -7,7 +7,7 @@ import { mockPublications } from './fixtures';
 jest.mock('../src/services/vectorStore', () => ({
   vectorStore: {
     isReady: jest.fn(),
-    getAll: jest.fn(),
+    getMetadata: jest.fn(),
   },
 }));
 
@@ -18,7 +18,10 @@ app.use('/api/publications/meta', metaRouter);
 describe('GET /api/publications/meta', () => {
   beforeEach(() => {
     (vectorStore.isReady as jest.Mock).mockReturnValue(true);
-    (vectorStore.getAll as jest.Mock).mockReturnValue(mockPublications);
+    (vectorStore.getMetadata as jest.Mock).mockReturnValue({
+      projects: Array.from(new Set(mockPublications.map((p) => p.project))).sort(),
+      categories: Array.from(new Set(mockPublications.map((p) => p.category))).sort(),
+    });
   });
 
   it('returns 503 when store not ready', async () => {

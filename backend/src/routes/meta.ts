@@ -9,10 +9,7 @@ router.get('/', (_req: Request, res: Response) => {
     return sendError(res, 503, 'Service initialising, please retry in a moment', 'NOT_READY');
   }
 
-  const all = vectorStore.getAll();
-  const projects = Array.from(new Set(all.map((p) => p.project))).sort();
-  const categories = Array.from(new Set(all.map((p) => p.category))).sort();
-
+  const { projects, categories } = vectorStore.getMetadata();
   return res.json(ok({ projects, categories }));
 });
 

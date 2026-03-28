@@ -9,6 +9,7 @@ const BATCH_SIZE = 20;
 class VectorStore {
   private entries: VectorEntry[] = [];
   private built = false;
+  private metadata: { projects: string[]; categories: string[] } | null = null;
 
   async build(publications: Publication[]): Promise<void> {
     console.log(`[VectorStore] Embedding ${publications.length} publications in batches of ${BATCH_SIZE}...`);
@@ -37,6 +38,10 @@ class VectorStore {
       );
     }
 
+    this.metadata = {
+      projects: Array.from(new Set(publications.map((p) => p.project))).sort(),
+      categories: Array.from(new Set(publications.map((p) => p.category))).sort(),
+    };
     this.built = true;
     console.log(`[VectorStore] Build complete in ${Date.now() - start}ms.\n`);
   }
@@ -74,6 +79,11 @@ class VectorStore {
 
   getAll(): Publication[] {
     return this.entries.map((e) => e.publication);
+  }
+
+  getMetadata(): { projects: string[]; categories: string[] } {
+    if (!this.built || !this.metadata) throw new Error('[VectorStore] Store not built yet');
+    return this.metadata;
   }
 
   isReady(): boolean {
