@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import { paginationSchema } from '../schemas';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+const DEV_API_BASE_URL = 'http://localhost:3001';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || DEV_API_BASE_URL;
 
 export class ApiError extends Error {
   constructor(
