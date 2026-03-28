@@ -61,12 +61,17 @@ describe('VectorStore', () => {
     });
 
     it('throws if called before build', () => {
-      // Create a fresh instance to test unbuilt state
-      const { VectorStore } = jest.requireActual('../src/services/vectorStore') as {
-        VectorStore: new () => typeof vectorStore
-      };
-      const fresh = new VectorStore();
-      expect(() => fresh.searchByVector([1, 0], 5, false)).toThrow('Store not built yet');
+      // Reset modules to get a fresh unbuilt singleton
+      jest.resetModules();
+      jest.mock('../src/lib/openai', () => ({
+        openai: { embeddings: { create: jest.fn() } },
+      }));
+      jest.mock('../src/lib/retry', () => ({
+        withRetry: jest.fn((fn: () => unknown) => fn()),
+      }));
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { vectorStore: freshStore } = require('../src/services/vectorStore');
+      expect(() => freshStore.searchByVector([1, 0], 5, false)).toThrow('Store not built yet');
     });
 
     it('returns results sorted by score descending', async () => {
