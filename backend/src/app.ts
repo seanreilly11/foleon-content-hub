@@ -10,7 +10,7 @@ import cors from 'cors';
 import { sanitizePublications, parseRawPublications } from './services/sanitizer';
 import { vectorStore } from './services/vectorStore';
 import { errorHandler } from './middleware/errorHandler';
-import { ok } from './lib/response';
+import { sendOk } from './lib/response';
 import type { StartupStage } from './types';
 import publicationsRouter from './routes/publications';
 import metaRouter from './routes/meta';
@@ -36,7 +36,7 @@ let startupStage: StartupStage = 'initialising';
 // The frontend polls this before showing the main UI.
 app.get('/health', (_req, res) => {
   const ready = vectorStore.isReady();
-  res.json(ok({ ready, ...(!ready && { startupStage }) }));
+  sendOk(res, { ready, ...(!ready && { startupStage }) });
 });
 
 // NOTE: /api/publications/meta MUST be registered before /api/publications

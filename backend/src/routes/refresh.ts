@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { sanitizePublications, parseRawPublications } from '../services/sanitizer';
 import { vectorStore } from '../services/vectorStore';
 import { cacheService } from '../services/cacheService';
-import { ok, sendError } from '../lib/response';
+import { sendOk, sendError } from '../lib/response';
 import { env } from '../lib/env';
 import rawData from '../data/publications.raw.json';
 
@@ -27,10 +27,10 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
     cacheService.clear();
     console.log('[Refresh] Cache invalidated.');
 
-    return res.json(ok({
+    return sendOk(res, {
       publicationCount: healed.length,
       durationMs: Date.now() - start,
-    }));
+    });
   } catch (err) {
     return next(err);
   }

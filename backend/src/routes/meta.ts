@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { vectorStore } from '../services/vectorStore';
-import { ok, sendError } from '../lib/response';
+import { sendOk, sendError } from '../lib/response';
 
 const router = Router();
 
@@ -10,7 +10,7 @@ router.get('/', (_req: Request, res: Response) => {
   }
 
   const { projects, categories } = vectorStore.getMetadata();
-  return res.json(ok({ projects, categories }));
+  return sendOk(res, { projects, categories });
 });
 
 export default router;

@@ -13,16 +13,16 @@ export interface OkOptions {
 
 /**
  * Send a successful response.
- * @example res.json(ok({ items: publications }, { pagination }))
- * @example res.json(ok({ projects, categories }))
+ * @example return sendOk(res, { items: publications }, { pagination })
+ * @example return sendOk(res, { projects, categories })
  */
-export function ok<T>(data: T, options: OkOptions = {}) {
-  return {
+export function sendOk<T>(res: Response, data: T, options: OkOptions = {}) {
+  return res.status(options.status ?? 200).json({
     success: true as const,
     data,
     pagination: options.pagination ?? null,
     error: null,
-  };
+  });
 }
 
 /**

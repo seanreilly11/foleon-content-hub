@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { semanticSearch } from '../services/searchService';
 import { vectorStore } from '../services/vectorStore';
 import { validate } from '../lib/validate';
-import { ok, sendError } from '../lib/response';
+import { sendOk, sendError } from '../lib/response';
 import { searchRequestSchema } from '../schemas';
 import type { SearchRequest } from '../types';
 
@@ -20,7 +20,7 @@ router.post(
 
     try {
       const { results, cacheHit, latencyMs } = await semanticSearch(query, includeDeleted);
-      return res.json(ok({ items: results, cacheHit, latencyMs }));
+      return sendOk(res, { items: results, cacheHit, latencyMs });
     } catch (err) {
       return next(err);
     }

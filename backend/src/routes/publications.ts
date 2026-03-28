@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { vectorStore } from '../services/vectorStore';
-import { ok, sendError } from '../lib/response';
+import { sendOk, sendError } from '../lib/response';
 import { Pagination } from '../types';
 
 const router = Router();
@@ -25,7 +25,7 @@ router.get('/', (req: Request, res: Response) => {
   }
 
   const pagination: Pagination = { page, limit, total, totalPages };
-  return res.json(ok({ items }, { pagination }));
+  return sendOk(res, { items }, { pagination });
 });
 
 export default router;
