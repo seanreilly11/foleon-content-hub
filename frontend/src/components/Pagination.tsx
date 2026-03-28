@@ -23,7 +23,7 @@ export const Pagination: React.FC<Props> = ({ page, totalPages, onPageChange }) 
   if (totalPages <= 1) return null;
 
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
-  const visible = pages.filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1);
+  const visible = pages.filter((p) => p <= 3 || p === totalPages || Math.abs(p - page) <= 1);
 
   return (
     <div className="flex items-center gap-1 justify-center mt-8">

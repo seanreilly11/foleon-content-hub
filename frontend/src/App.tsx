@@ -4,6 +4,7 @@ import { ProjectFilter } from './components/ProjectFilter';
 import { StatusBanner } from './components/StatusBanner';
 import { RecycleBinToggle } from './components/RecycleBinToggle';
 import { InitialisingScreen } from './components/InitialisingScreen';
+import { Navbar } from './components/Navbar';
 import { useServerReady } from './hooks/useServerReady';
 import { usePublications } from './hooks/usePublications';
 import { useSearch } from './hooks/useSearch';
@@ -35,19 +36,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-surface font-sans">
-      <header className="border-b border-gray-100 bg-white sticky top-0 z-10 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
-                <path d="M4 6h16M4 10h16M4 14h10" />
-              </svg>
-            </div>
-            <span className="text-lg font-semibold text-gray-900">Content Hub</span>
-          </div>
-          <span className="text-sm text-gray-400 font-medium tabular-nums">{total} publications</span>
-        </div>
-      </header>
+      <Navbar />
 
       <div className="bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-6 py-5 flex flex-col gap-3">

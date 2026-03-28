@@ -2,7 +2,7 @@ import React from 'react';
 
 const VARIANT_STYLES = {
   primary: 'bg-brand-500 text-white hover:bg-brand-600 disabled:opacity-40 disabled:cursor-not-allowed',
-  ghost:   'text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed',
+  ghost:   'text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed',
   outline: 'border border-gray-200 text-gray-600 hover:border-gray-300 hover:text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed',
 } as const;
 
