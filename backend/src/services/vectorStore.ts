@@ -81,6 +81,35 @@ class VectorStore {
     return this.entries.map((e) => e.publication);
   }
 
+  listPublications(opts: {
+    project?: string;
+    category?: string;
+    page: number;
+    limit: number;
+  }): { items: Publication[]; total: number; totalPages: number } {
+    if (!this.built) throw new Error('[VectorStore] Store not built yet');
+
+    let publications = this.getAll();
+
+    if (opts.project) {
+      publications = publications.filter(
+        (p) => p.project.toLowerCase() === opts.project!.toLowerCase()
+      );
+    }
+    if (opts.category) {
+      publications = publications.filter(
+        (p) => p.category.toLowerCase() === opts.category!.toLowerCase()
+      );
+    }
+
+    const total = publications.length;
+    const totalPages = Math.ceil(total / opts.limit);
+    const start = (opts.page - 1) * opts.limit;
+    const items = publications.slice(start, start + opts.limit);
+
+    return { items, total, totalPages };
+  }
+
   getMetadata(): { projects: string[]; categories: string[] } {
     if (!this.built || !this.metadata) throw new Error('[VectorStore] Store not built yet');
     return this.metadata;
