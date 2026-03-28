@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useFetchPublications } from './useFetchPublications';
-import { Publication } from '../types';
+import type { Publication } from '../types';
 
 export function usePublications() {
   const [page, setPage] = useState(1);

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Publication } from '../types';
+import type { Publication } from '../types';
 import { getCategoryStyle, STATUS_STYLES } from '../constants';
 import { Badge } from './ui';
 

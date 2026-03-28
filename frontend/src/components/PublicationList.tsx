@@ -1,5 +1,5 @@
 import React from 'react';
-import { Publication, SearchResult } from '../types';
+import type { Publication, SearchResult } from '../types';
 import { PublicationCard } from './PublicationCard';
 import { SkeletonCard } from './SkeletonCard';
 import { Pagination } from './Pagination';

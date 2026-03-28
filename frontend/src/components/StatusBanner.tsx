@@ -1,5 +1,5 @@
 import React from 'react';
-import { SearchData } from '../types';
+import type { SearchData } from '../types';
 
 interface Props {
   response: SearchData;
