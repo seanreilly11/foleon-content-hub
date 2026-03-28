@@ -30,10 +30,9 @@ export function useSearch() {
 
   const handleIncludeDeletedChange = (value: boolean) => {
     setIncludeDeleted(value);
-    // Re-run immediately with new flag if there's an active query
-    if (debouncedQuery.trim()) {
-      mutate({ query: debouncedQuery.trim(), includeDeleted: value });
-    }
+    // The useEffect re-runs immediately when includeDeleted changes (it's in the
+    // dependency array), so no direct mutate() call is needed here — that would
+    // fire a second identical request.
   };
 
   // mutationData is ApiResult<SearchData> — envelope already unwrapped by apiPost
