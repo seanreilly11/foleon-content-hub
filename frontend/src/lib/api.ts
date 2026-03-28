@@ -79,17 +79,9 @@ async function parseResponse<T extends z.ZodTypeAny>(
   // Gate 3 — Data schema validation
   const parsed = envelopeSchema(dataSchema).parse(json);
 
-  // Unwrap — callers never see the envelope
-  if (parsed.success) {
-    return {
-      data: parsed.data as z.infer<T>,
-      pagination: parsed.pagination,
-    };
-  }
-
-  // Unreachable — discriminated union guarantees success: true here,
-  // but TypeScript needs the explicit throw to narrow the return type.
-  throw new ApiError(res.status, 'Unexpected response shape');
+  // Gate 2 already threw for success: false — safe to cast to the success shape.
+  // TS can't narrow through the generic envelopeSchema wrapper without a runtime branch.
+  return parsed as unknown as ApiResult<z.infer<T>>;
 }
 
 /**
