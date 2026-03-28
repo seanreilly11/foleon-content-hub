@@ -23,7 +23,10 @@ export async function withRetry<T>(
 
       // Don't retry permanent client errors (auth failures, bad requests).
       // Exception: 429 Too Many Requests IS transient and must be retried.
-      const status = (err as { status?: number })?.status;
+      const status =
+        err !== null && typeof err === 'object' && 'status' in err && typeof (err as { status: unknown }).status === 'number'
+          ? (err as { status: number }).status
+          : undefined;
       if (status && status >= 400 && status < 500 && status !== 429) {
         throw err;
       }
