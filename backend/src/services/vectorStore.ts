@@ -47,10 +47,10 @@ class VectorStore {
   }
 
   async embedText(text: string): Promise<number[]> {
-    const response = await openai.embeddings.create({
-      model: EMBEDDING_MODEL,
-      input: text,
-    });
+    const response = await withRetry(
+      () => openai.embeddings.create({ model: EMBEDDING_MODEL, input: text }),
+      { label: 'embedText' }
+    );
     return response.data[0].embedding;
   }
 
