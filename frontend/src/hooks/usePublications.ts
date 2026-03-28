@@ -38,6 +38,6 @@ export function usePublications() {
     selectedCategory,
     setSelectedCategory: handleCategoryChange,
     isLoading,
-    error: error ? (error as Error).message : null,
+    error: error instanceof Error ? error.message : null,
   };
 }

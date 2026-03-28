@@ -42,7 +42,7 @@ export function useSearch() {
     setQuery,
     results: mutationData?.data ?? null,
     isLoading: isPending,
-    error: error ? (error as Error).message : null,
+    error: error instanceof Error ? error.message : null,
     clearSearch,
     includeDeleted,
     setIncludeDeleted: handleIncludeDeletedChange,

@@ -5,13 +5,16 @@ const DEV_API_BASE_URL = 'http://localhost:3001';
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || DEV_API_BASE_URL;
 
 export class ApiError extends Error {
-  constructor(
-    public status: number,
-    public serverMessage: string,
-    public code?: string
-  ) {
+  status: number;
+  serverMessage: string;
+  code?: string;
+
+  constructor(status: number, serverMessage: string, code?: string) {
     super(`HTTP ${status}: ${serverMessage}`);
     this.name = 'ApiError';
+    this.status = status;
+    this.serverMessage = serverMessage;
+    this.code = code;
   }
 }
 
