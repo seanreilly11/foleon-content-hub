@@ -1,0 +1,15 @@
+const REQUIRED_ENV_VARS = ['OPENAI_API_KEY'] as const;
+
+export function validateEnv(): void {
+  const missing = REQUIRED_ENV_VARS.filter((key) => !process.env[key]);
+
+  if (missing.length > 0) {
+    console.error('');
+    console.error('❌ Missing required environment variables:');
+    missing.forEach((key) => console.error(`   - ${key}`));
+    console.error('');
+    console.error('Copy .env.example to .env and fill in the values.');
+    console.error('');
+    process.exit(1);
+  }
+}

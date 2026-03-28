@@ -1,0 +1,84 @@
+import { openai } from '../lib/openai';
+import { withRetry } from '../lib/retry';
+import { Publication, VectorEntry, SearchResult } from '../types';
+import { cosineSimilarity } from '../lib/cosine';
+
+const EMBEDDING_MODEL = 'text-embedding-3-small';
+const BATCH_SIZE = 20;
+
+class VectorStore {
+  private entries: VectorEntry[] = [];
+  private built = false;
+
+  async build(publications: Publication[]): Promise<void> {
+    console.log(`[VectorStore] Embedding ${publications.length} publications in batches of ${BATCH_SIZE}...`);
+    this.entries = [];
+    const start = Date.now();
+
+    for (let i = 0; i < publications.length; i += BATCH_SIZE) {
+      const batch = publications.slice(i, i + BATCH_SIZE);
+
+      // Embed title + category together for richer semantic signal.
+      // A search for "success story" should match docs categorised as "Success Stories"
+      // even when their title alone is a generic "Case Study: ACME".
+      const inputs = batch.map((p) => `${p.title} ${p.category}`);
+
+      const response = await withRetry(
+        () => openai.embeddings.create({ model: EMBEDDING_MODEL, input: inputs }),
+        { label: `Embedding batch ${Math.floor(i / BATCH_SIZE) + 1}` }
+      );
+
+      response.data.forEach((embeddingObj, index) => {
+        this.entries.push({ publication: batch[index], vector: embeddingObj.embedding });
+      });
+
+      console.log(
+        `  [VectorStore] ${Math.min(i + BATCH_SIZE, publications.length)}/${publications.length} embedded`
+      );
+    }
+
+    this.built = true;
+    console.log(`[VectorStore] Build complete in ${Date.now() - start}ms.\n`);
+  }
+
+  async embedText(text: string): Promise<number[]> {
+    const response = await openai.embeddings.create({
+      model: EMBEDDING_MODEL,
+      input: text,
+    });
+    return response.data[0].embedding;
+  }
+
+  /**
+   * Search using a pre-computed vector. Always call embedText() first,
+   * then pass the result here — avoids double-embedding per request.
+   *
+   * @param includeDeleted - When true, deleted publications are included in results.
+   *   Default false (deleted docs are excluded from normal search, see "recycle bin" feature).
+   */
+  searchByVector(queryVector: number[], topK = 10, includeDeleted = false): SearchResult[] {
+    if (!this.built) throw new Error('[VectorStore] Store not built yet');
+
+    const filtered = includeDeleted
+      ? this.entries
+      : this.entries.filter((e) => e.publication.status !== 'deleted');
+
+    return filtered
+      .map((entry) => ({
+        publication: entry.publication,
+        score: cosineSimilarity(queryVector, entry.vector),
+      }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, topK);
+  }
+
+  getAll(): Publication[] {
+    return this.entries.map((e) => e.publication);
+  }
+
+  isReady(): boolean {
+    return this.built;
+  }
+}
+
+export const vectorStore = new VectorStore();
