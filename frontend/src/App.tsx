@@ -13,6 +13,7 @@ export default function App() {
     const {
         query,
         setQuery,
+        onSearch,
         results: searchResults,
         isLoading: searchLoading,
         error: searchError,
@@ -34,7 +35,7 @@ export default function App() {
                     <SearchBar
                         query={query}
                         onChange={setQuery}
-                        onSearch={setQuery}
+                        onSearch={onSearch}
                         onClear={clearSearch}
                         loading={searchLoading}
                     />
