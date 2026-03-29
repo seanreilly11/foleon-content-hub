@@ -5,6 +5,7 @@ import { cosineSimilarity } from '../lib/cosine';
 
 const EMBEDDING_MODEL = 'text-embedding-3-small';
 const BATCH_SIZE = 20;
+const MIN_SIMILARITY_SCORE = 0.35;
 
 class VectorStore {
   private entries: VectorEntry[] = [];
@@ -61,7 +62,7 @@ class VectorStore {
    * @param includeDeleted - When true, deleted publications are included in results.
    *   Default false (deleted docs are excluded from normal search, see "recycle bin" feature).
    */
-  searchByVector(queryVector: number[], topK = 10, includeDeleted = false): SearchResult[] {
+  searchByVector(queryVector: number[], includeDeleted = false): SearchResult[] {
     if (!this.built) throw new Error('[VectorStore] Store not built yet');
 
     const filtered = includeDeleted
@@ -73,8 +74,8 @@ class VectorStore {
         publication: entry.publication,
         score: cosineSimilarity(queryVector, entry.vector),
       }))
-      .sort((a, b) => b.score - a.score)
-      .slice(0, topK);
+      .filter((r) => r.score >= MIN_SIMILARITY_SCORE)
+      .sort((a, b) => b.score - a.score);
   }
 
   getAll(): Publication[] {

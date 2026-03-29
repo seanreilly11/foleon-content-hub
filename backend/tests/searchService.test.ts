@@ -56,7 +56,6 @@ describe("semanticSearch", () => {
             await semanticSearch("success story");
             expect(vectorStore.searchByVector).toHaveBeenCalledWith(
                 mockVector,
-                10,
                 false,
             );
         });
@@ -166,7 +165,6 @@ describe("semanticSearch", () => {
             await semanticSearch("deleted report", true);
             expect(vectorStore.searchByVector).toHaveBeenCalledWith(
                 mockVector,
-                10,
                 true,
             );
         });

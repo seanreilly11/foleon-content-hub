@@ -2,7 +2,6 @@ import { vectorStore } from './vectorStore';
 import { cacheService } from './cacheService';
 import { SearchResponse } from '../types';
 
-const MAX_SEARCH_RESULTS = 10;
 
 /**
  * @param includeDeleted - When true, search includes deleted publications
@@ -40,7 +39,7 @@ export async function semanticSearch(
     }
   }
 
-  const results = vectorStore.searchByVector(queryVector, MAX_SEARCH_RESULTS, includeDeleted);
+  const results = vectorStore.searchByVector(queryVector, includeDeleted);
 
   // Only cache standard searches — recycle bin results are niche and not worth caching
   if (!includeDeleted) {

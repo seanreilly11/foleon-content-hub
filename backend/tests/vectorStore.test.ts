@@ -84,37 +84,37 @@ describe('VectorStore', () => {
       }));
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { vectorStore: freshStore } = require('../src/services/vectorStore');
-      expect(() => freshStore.searchByVector([1, 0], 5, false)).toThrow('Store not built yet');
+      expect(() => freshStore.searchByVector([1, 0], false)).toThrow('Store not built yet');
     });
 
     it('returns results sorted by score descending', async () => {
       const queryVec = new Array(1536).fill(0.1);
-      const results = vectorStore.searchByVector(queryVec, 10, false);
+      const results = vectorStore.searchByVector(queryVec, false);
       for (let i = 1; i < results.length; i++) {
         expect(results[i - 1].score).toBeGreaterThanOrEqual(results[i].score);
       }
     });
 
-    it('respects topK limit', async () => {
+    it('only returns results at or above the minimum score threshold', async () => {
       const queryVec = new Array(1536).fill(0.1);
-      const results = vectorStore.searchByVector(queryVec, 2, false);
-      expect(results.length).toBeLessThanOrEqual(2);
+      const results = vectorStore.searchByVector(queryVec, false);
+      results.forEach((r) => expect(r.score).toBeGreaterThanOrEqual(0.35));
     });
 
     it('excludes deleted publications when includeDeleted: false', async () => {
       const queryVec = new Array(1536).fill(0.1);
-      const results = vectorStore.searchByVector(queryVec, 10, false);
+      const results = vectorStore.searchByVector(queryVec, false);
       const statuses = results.map((r) => r.publication.status);
       expect(statuses).not.toContain('deleted');
     });
 
     it('includes deleted publications when includeDeleted: true', async () => {
       const queryVec = new Array(1536).fill(0.1);
-      const results = vectorStore.searchByVector(queryVec, 10, true);
+      const results = vectorStore.searchByVector(queryVec, true);
       const hasDeleted = results.some((r) => r.publication.status === 'deleted');
       expect(hasDeleted).toBe(true);
       expect(results.length).toBeGreaterThanOrEqual(
-        vectorStore.searchByVector(queryVec, 10, false).length
+        vectorStore.searchByVector(queryVec, false).length
       );
     });
   });
