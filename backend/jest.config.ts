@@ -7,14 +7,7 @@ const config: Config = {
   testMatch: ['**/*.test.ts'],
   moduleFileExtensions: ['ts', 'js', 'json'],
   transform: {
-    '^.+\\.ts$': ['ts-jest', {
-      tsconfig: {
-        strict: true,
-        esModuleInterop: true,
-        resolveJsonModule: true,
-        module: 'commonjs',
-      },
-    }],
+    '^.+\\.ts$': ['ts-jest', { tsconfig: './tsconfig.test.json' }],
   },
   clearMocks: true,
 };
