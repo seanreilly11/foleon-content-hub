@@ -15,6 +15,8 @@ jest.mock("../src/services/cacheService", () => ({
     cacheService: {
         lookup: jest.fn(),
         store: jest.fn(),
+        lookupString: jest.fn(),
+        storeString: jest.fn(),
         clear: jest.fn(),
         size: jest.fn().mockReturnValue(0),
     },
@@ -83,7 +85,7 @@ describe("semanticSearch", () => {
         });
     });
 
-    describe("cache hit", () => {
+    describe("vector cache hit", () => {
         beforeEach(() => {
             (cacheService.lookup as jest.Mock).mockReturnValue(
                 mockSearchResults,
@@ -105,8 +107,56 @@ describe("semanticSearch", () => {
             expect(cacheService.store).not.toHaveBeenCalled();
         });
 
-        it("still embeds the query — needed to check cache", async () => {
+        it("still embeds the query — needed to check vector cache", async () => {
             await semanticSearch("success story");
+            expect(vectorStore.embedText).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe("string cache hit (fast path)", () => {
+        beforeEach(() => {
+            (cacheService.lookupString as jest.Mock).mockReturnValue(
+                mockSearchResults,
+            );
+        });
+
+        it("returns cacheHit: true without calling embedText", async () => {
+            const result = await semanticSearch("success story");
+            expect(result.cacheHit).toBe(true);
+            expect(vectorStore.embedText).not.toHaveBeenCalled();
+        });
+
+        it("does not call searchByVector", async () => {
+            await semanticSearch("success story");
+            expect(vectorStore.searchByVector).not.toHaveBeenCalled();
+        });
+
+        it("uses the lowercased query as the string cache key", async () => {
+            await semanticSearch("SUCCESS STORY");
+            expect(cacheService.lookupString).toHaveBeenCalledWith("success story");
+        });
+    });
+
+    describe("query normalisation", () => {
+        it("uppercase and lowercase of the same query share the same string cache entry", async () => {
+            // First call (lowercase) — cache miss, embeds, stores
+            (cacheService.lookupString as jest.Mock).mockReturnValueOnce(null);
+            await semanticSearch("success story");
+            expect(cacheService.storeString).toHaveBeenCalledWith(
+                "success story",
+                mockSearchResults,
+            );
+
+            // Second call (uppercase) — should hit the same string cache key
+            (cacheService.lookupString as jest.Mock).mockReturnValueOnce(
+                mockSearchResults,
+            );
+            const result = await semanticSearch("SUCCESS STORY");
+            expect(cacheService.lookupString).toHaveBeenLastCalledWith(
+                "success story",
+            );
+            expect(result.cacheHit).toBe(true);
+            // embedText called only for the first (cache-miss) call
             expect(vectorStore.embedText).toHaveBeenCalledTimes(1);
         });
     });
