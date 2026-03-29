@@ -2,6 +2,7 @@ import React from 'react';
 import { useFetchMeta } from '../hooks/useFetchMeta';
 import { getCategoryDot } from '../constants';
 import { FilterButton } from './ui';
+import { Button } from './ui/Button';
 
 interface Props {
   selectedProject: string;
@@ -27,6 +28,15 @@ export const ProjectFilter: React.FC<Props> = ({
 
   return (
     <div className="flex flex-col gap-6">
+      <Button
+        variant="ghost"
+        size="sm"
+        className="w-full text-gray-500 hover:text-gray-700"
+        disabled={!selectedProject && !selectedCategory}
+        onClick={() => { onProjectChange(''); onCategoryChange(''); }}
+      >
+        Clear filters
+      </Button>
       <div>
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-1">
           Category
