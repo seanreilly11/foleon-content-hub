@@ -15,7 +15,7 @@ export async function semanticSearch(
 
   // Normalise before embedding — "Client Testimonial" and "client testimonial"
   // must produce the same vector so the cache can match them.
-  const normalizedQuery = query.toLowerCase();
+  const normalizedQuery = query.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
 
   // Fast path: exact string match skips the embedding call entirely.
   // Only used for standard searches — recycle bin results are never cached.
