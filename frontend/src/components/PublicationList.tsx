@@ -23,7 +23,7 @@ export const PublicationList: React.FC<Props> = ({
   onPageChange,
   isSearchMode,
 }) => {
-  if (loading) {
+  if (loading && !isSearchMode) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
         {Array.from({ length: 20 }).map((_, i) => <SkeletonCard key={i} />)}
