@@ -78,6 +78,13 @@ describe('POST /api/search', () => {
     expect(res.status).toBe(400);
   });
 
+  it('defaults includeDeleted to false when omitted from body', async () => {
+    await request(app)
+      .post('/api/search')
+      .send({ query: 'test' });
+    expect(semanticSearch).toHaveBeenCalledWith('test', false);
+  });
+
   it('passes includeDeleted to semanticSearch', async () => {
     await request(app)
       .post('/api/search')

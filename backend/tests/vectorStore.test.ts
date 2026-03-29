@@ -31,6 +31,19 @@ describe('VectorStore', () => {
   });
 
   describe('build', () => {
+    it('isReady() returns false before build is called', () => {
+      jest.resetModules();
+      jest.mock('../src/lib/openai', () => ({
+        openai: { embeddings: { create: jest.fn() } },
+      }));
+      jest.mock('../src/lib/retry', () => ({
+        withRetry: jest.fn((fn: () => unknown) => fn()),
+      }));
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { vectorStore: freshStore } = require('../src/services/vectorStore');
+      expect(freshStore.isReady()).toBe(false);
+    });
+
     it('embeds all publications in batches', async () => {
       (openai.embeddings.create as jest.Mock).mockResolvedValue(
         mockEmbeddingResponse(mockPublications.length)
@@ -99,9 +112,7 @@ describe('VectorStore', () => {
       const queryVec = new Array(1536).fill(0.1);
       const results = vectorStore.searchByVector(queryVec, 10, true);
       const hasDeleted = results.some((r) => r.publication.status === 'deleted');
-      // With our fixture data, deleted pub should appear
-      expect(results.length).toBeGreaterThan(0);
-      // All results including deleted are present
+      expect(hasDeleted).toBe(true);
       expect(results.length).toBeGreaterThanOrEqual(
         vectorStore.searchByVector(queryVec, 10, false).length
       );

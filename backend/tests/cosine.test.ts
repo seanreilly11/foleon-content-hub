@@ -17,6 +17,7 @@ describe('cosineSimilarity', () => {
   it('returns 0 when either vector has zero magnitude', () => {
     expect(cosineSimilarity([0, 0], [1, 2])).toBe(0);
     expect(cosineSimilarity([1, 2], [0, 0])).toBe(0);
+    expect(cosineSimilarity([0, 0], [0, 0])).toBe(0);
   });
 
   it('throws for mismatched vector lengths', () => {
@@ -27,6 +28,13 @@ describe('cosineSimilarity', () => {
     const a = new Array(1536).fill(0.5);
     const b = new Array(1536).fill(0.5);
     expect(cosineSimilarity(a, b)).toBeCloseTo(1.0);
+  });
+
+  it('handles mixed-sign vectors correctly', () => {
+    // [1, -2, 3] vs [-1, 2, -3]: dot = -1-4-9 = -14, |a|=|b|=sqrt(14), cos = -14/14 = -1
+    expect(cosineSimilarity([1, -2, 3], [-1, 2, -3])).toBeCloseTo(-1);
+    // [1, -1] vs [1, 1]: dot = 1-1 = 0, orthogonal despite both having mixed signs
+    expect(cosineSimilarity([1, -1], [1, 1])).toBeCloseTo(0);
   });
 
   it('is symmetric — cosineSimilarity(a, b) === cosineSimilarity(b, a)', () => {

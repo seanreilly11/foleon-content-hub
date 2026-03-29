@@ -23,6 +23,14 @@ describe('CacheService', () => {
       expect(cacheService.lookup(similar)).toEqual(mockSearchResults);
     });
 
+    it('returns null for vector with similarity just below 0.95', () => {
+      // [1,0,0,0] vs [1,0.4,0,0] → cosine ≈ 0.928, which is < 0.95
+      const stored = [1, 0, 0, 0];
+      const justBelow = [1, 0.4, 0, 0];
+      cacheService.store(stored, mockSearchResults);
+      expect(cacheService.lookup(justBelow)).toBeNull();
+    });
+
     it('returns null for orthogonal vector (similarity = 0)', () => {
       cacheService.store(unitVector(4, 0), mockSearchResults);
       expect(cacheService.lookup(unitVector(4, 1))).toBeNull();
