@@ -1,6 +1,6 @@
 import { openai } from "../lib/openai";
 import { withRetry } from "../lib/retry";
-import { Publication, VectorEntry, SearchResult } from "../types";
+import { Publication, VectorEntry, SearchResult, BrowseSort } from "../types";
 import { cosineSimilarity } from "../lib/cosine";
 
 const EMBEDDING_MODEL = "text-embedding-3-small";
@@ -108,6 +108,7 @@ class VectorStore {
     listPublications(opts: {
         project?: string;
         category?: string;
+        sort?: BrowseSort;
         page: number;
         limit: number;
     }): { items: Publication[]; total: number; totalPages: number } {
@@ -126,6 +127,19 @@ class VectorStore {
                     p.category.toLowerCase() === opts.category!.toLowerCase(),
             );
         }
+
+        const STATUS_ORDER: Record<Publication['status'], number> = {
+            published: 0, draft: 1, archived: 2, deleted: 3,
+        };
+        const sorters: Record<BrowseSort, (a: Publication, b: Publication) => number> = {
+            'date-desc':   (a, b) => b.created_at.localeCompare(a.created_at),
+            'date-asc':    (a, b) => a.created_at.localeCompare(b.created_at),
+            'title-asc':   (a, b) => a.title.localeCompare(b.title),
+            'title-desc':  (a, b) => b.title.localeCompare(a.title),
+            'project-asc': (a, b) => a.project.localeCompare(b.project),
+            'status':      (a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status],
+        };
+        publications.sort(sorters[opts.sort ?? 'date-desc']);
 
         const total = publications.length;
         const totalPages = Math.ceil(total / opts.limit);

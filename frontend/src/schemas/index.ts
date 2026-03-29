@@ -59,6 +59,13 @@ export const searchRequestSchema = z.object({
   includeDeleted: z.boolean(),
 });
 
+// ─── Sorting ─────────────────────────────────────────────────────────────────
+
+export const BROWSE_SORT_VALUES = ['date-desc', 'date-asc', 'title-asc', 'title-desc', 'project-asc', 'status'] as const;
+export const SEARCH_SORT_VALUES = ['relevance', 'date-desc', 'date-asc', 'title-asc', 'title-desc'] as const;
+export type BrowseSort = typeof BROWSE_SORT_VALUES[number];
+export type SearchSort = typeof SEARCH_SORT_VALUES[number];
+
 // ─── Inferred types ───────────────────────────────────────────────────────────
 
 export type HealthData        = z.infer<typeof healthDataSchema>;

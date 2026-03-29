@@ -20,6 +20,8 @@ export default function App() {
         clearSearch,
         includeDeleted,
         setIncludeDeleted,
+        searchSort,
+        setSearchSort,
     } = useSearch();
 
     // Show initialising screen until backend AI pipeline is complete
@@ -60,6 +62,8 @@ export default function App() {
                 searchResults={searchResults}
                 searchLoading={searchLoading}
                 searchError={searchError}
+                searchSort={searchSort}
+                setSearchSort={setSearchSort}
             />
         </div>
     );

@@ -1,19 +1,41 @@
 import React from "react";
-import type { SearchData } from "../types";
+import type { SearchData, BrowseSort, SearchSort } from "../types";
 import { usePublications } from "../hooks/usePublications";
 import { ProjectFilter } from "./ProjectFilter";
 import { PublicationList } from "./PublicationList";
+import { SortSelect } from "./SortSelect";
+
+const BROWSE_SORT_OPTIONS = [
+  { value: 'date-desc',   label: 'Newest first' },
+  { value: 'date-asc',    label: 'Oldest first' },
+  { value: 'title-asc',   label: 'Title A–Z' },
+  { value: 'title-desc',  label: 'Title Z–A' },
+  { value: 'project-asc', label: 'Project A–Z' },
+  { value: 'status',      label: 'Status' },
+];
+
+const SEARCH_SORT_OPTIONS = [
+  { value: 'relevance',  label: 'Relevance' },
+  { value: 'date-desc',  label: 'Newest first' },
+  { value: 'date-asc',   label: 'Oldest first' },
+  { value: 'title-asc',  label: 'Title A–Z' },
+  { value: 'title-desc', label: 'Title Z–A' },
+];
 
 interface Props {
     searchResults: SearchData | null;
     searchLoading: boolean;
     searchError: string | null;
+    searchSort: SearchSort;
+    setSearchSort: (s: SearchSort) => void;
 }
 
 export const ContentArea: React.FC<Props> = ({
     searchResults,
     searchLoading,
     searchError,
+    searchSort,
+    setSearchSort,
 }) => {
     const {
         publications,
@@ -25,6 +47,8 @@ export const ContentArea: React.FC<Props> = ({
         setSelectedProject,
         selectedCategory,
         setSelectedCategory,
+        sort,
+        setSort,
         isLoading: pubsLoading,
         error: pubsError,
     } = usePublications();
@@ -52,17 +76,33 @@ export const ContentArea: React.FC<Props> = ({
                         {pubsError ?? searchError}
                     </div>
                 )}
-                {!isSearchMode && (
-                    <p className="text-sm text-gray-500 mb-4">
-                        {selectedProject || selectedCategory
-                            ? "Filtered results"
-                            : "All publications"}
-                        {" · "}
-                        <span className="font-medium text-gray-700">
-                            {total} total
-                        </span>
-                    </p>
-                )}
+                <div className="flex items-center justify-between mb-4">
+                    {!isSearchMode && (
+                        <p className="text-sm text-gray-500">
+                            {selectedProject || selectedCategory
+                                ? "Filtered results"
+                                : "All publications"}
+                            {" · "}
+                            <span className="font-medium text-gray-700">
+                                {total} total
+                            </span>
+                        </p>
+                    )}
+                    {isSearchMode && <div />}
+                    {isSearchMode ? (
+                        <SortSelect
+                            value={searchSort}
+                            onChange={(v) => setSearchSort(v as SearchSort)}
+                            options={SEARCH_SORT_OPTIONS}
+                        />
+                    ) : (
+                        <SortSelect
+                            value={sort}
+                            onChange={(v) => setSort(v as BrowseSort)}
+                            options={BROWSE_SORT_OPTIONS}
+                        />
+                    )}
+                </div>
                 <PublicationList
                     publications={isSearchMode ? undefined : publications}
                     searchResults={

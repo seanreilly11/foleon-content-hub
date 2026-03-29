@@ -19,12 +19,17 @@ app.use('/api/publications', publicationsRouter);
 function mockListPublications(opts: {
   project?: string;
   category?: string;
+  sort?: string;
   page: number;
   limit: number;
 }) {
   let pubs: Publication[] = [...mockPublications];
   if (opts.project) pubs = pubs.filter((p) => p.project.toLowerCase() === opts.project!.toLowerCase());
   if (opts.category) pubs = pubs.filter((p) => p.category.toLowerCase() === opts.category!.toLowerCase());
+  if (opts.sort === 'title-asc') pubs.sort((a, b) => a.title.localeCompare(b.title));
+  if (opts.sort === 'title-desc') pubs.sort((a, b) => b.title.localeCompare(a.title));
+  if (opts.sort === 'date-asc') pubs.sort((a, b) => a.created_at.localeCompare(b.created_at));
+  if (opts.sort === 'date-desc') pubs.sort((a, b) => b.created_at.localeCompare(a.created_at));
   const total = pubs.length;
   const totalPages = Math.ceil(total / opts.limit);
   const start = (opts.page - 1) * opts.limit;
@@ -83,5 +88,21 @@ describe('GET /api/publications', () => {
   it('returns all publications with no filters', async () => {
     const res = await request(app).get('/api/publications?limit=100');
     expect(res.body.data.items).toHaveLength(mockPublications.length);
+  });
+
+  it('passes sort=title-asc to listPublications', async () => {
+    const res = await request(app).get('/api/publications?sort=title-asc&limit=100');
+    expect(res.status).toBe(200);
+    expect(vectorStore.listPublications).toHaveBeenCalledWith(
+      expect.objectContaining({ sort: 'title-asc' }),
+    );
+  });
+
+  it('defaults to date-desc for unknown sort values', async () => {
+    const res = await request(app).get('/api/publications?sort=invalid');
+    expect(res.status).toBe(200);
+    expect(vectorStore.listPublications).toHaveBeenCalledWith(
+      expect.objectContaining({ sort: 'date-desc' }),
+    );
   });
 });

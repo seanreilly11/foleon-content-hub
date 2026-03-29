@@ -10,4 +10,7 @@ export type {
   HealthResponse,
   Mappings,
   StartupStage,
+  BrowseSort,
 } from '../schemas';
+
+export { BROWSE_SORT_VALUES } from '../schemas';

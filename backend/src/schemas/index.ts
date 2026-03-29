@@ -92,6 +92,11 @@ export const healthResponseSchema = z.object({
   startupStage: z.string().optional(),
 });
 
+// ─── Sorting ─────────────────────────────────────────────────────────────────
+
+export const BROWSE_SORT_VALUES = ['date-desc', 'date-asc', 'title-asc', 'title-desc', 'project-asc', 'status'] as const;
+export type BrowseSort = typeof BROWSE_SORT_VALUES[number];
+
 // ─── Inferred types ──────────────────────────────────────────────────────────
 // Import these via types/index.ts — never import from schemas directly in app code
 
