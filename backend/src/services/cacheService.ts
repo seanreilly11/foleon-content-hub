@@ -26,10 +26,14 @@ class CacheService {
   }
 
   store(queryVector: number[], results: SearchResult[]): void {
+    const now = Date.now();
+    // Purge expired entries before checking capacity — prevents them from
+    // triggering premature FIFO eviction of still-valid entries.
+    this.cache = this.cache.filter((e) => now - e.timestamp <= CACHE_TTL_MS);
     if (this.cache.length >= MAX_CACHE_SIZE) {
-      this.cache.shift(); // FIFO eviction
+      this.cache.shift(); // FIFO eviction of oldest valid entry
     }
-    this.cache.push({ queryVector, results, timestamp: Date.now() });
+    this.cache.push({ queryVector, results, timestamp: now });
   }
 
   /** Invalidate all cached results. Call after data refresh. */
