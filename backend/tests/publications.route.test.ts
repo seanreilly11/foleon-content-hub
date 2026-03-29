@@ -3,13 +3,12 @@ import express from 'express';
 import publicationsRouter from '../src/routes/publications';
 import { vectorStore } from '../src/services/vectorStore';
 import { mockPublications } from './fixtures';
-
-// npm install -D supertest @types/supertest
+import type { Publication } from '../src/types';
 
 jest.mock('../src/services/vectorStore', () => ({
   vectorStore: {
     isReady: jest.fn(),
-    getAll: jest.fn(),
+    listPublications: jest.fn(),
   },
 }));
 
@@ -17,10 +16,25 @@ const app = express();
 app.use(express.json());
 app.use('/api/publications', publicationsRouter);
 
+function mockListPublications(opts: {
+  project?: string;
+  category?: string;
+  page: number;
+  limit: number;
+}) {
+  let pubs: Publication[] = [...mockPublications];
+  if (opts.project) pubs = pubs.filter((p) => p.project.toLowerCase() === opts.project!.toLowerCase());
+  if (opts.category) pubs = pubs.filter((p) => p.category.toLowerCase() === opts.category!.toLowerCase());
+  const total = pubs.length;
+  const totalPages = Math.ceil(total / opts.limit);
+  const start = (opts.page - 1) * opts.limit;
+  return { items: pubs.slice(start, start + opts.limit), total, totalPages };
+}
+
 describe('GET /api/publications', () => {
   beforeEach(() => {
     (vectorStore.isReady as jest.Mock).mockReturnValue(true);
-    (vectorStore.getAll as jest.Mock).mockReturnValue(mockPublications);
+    (vectorStore.listPublications as jest.Mock).mockImplementation(mockListPublications);
   });
 
   it('returns 503 when store not ready', async () => {
@@ -30,7 +44,7 @@ describe('GET /api/publications', () => {
     expect(res.body.error.code).toBe('NOT_READY');
   });
 
-  it('returns 200 with ok() envelope shape', async () => {
+  it('returns 200 with sendOk() envelope shape', async () => {
     const res = await request(app).get('/api/publications');
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);

@@ -1,4 +1,4 @@
-import { ok, sendError } from '../src/lib/response';
+import { sendOk, sendError } from '../src/lib/response';
 import { Response } from 'express';
 
 function mockRes() {
@@ -9,23 +9,41 @@ function mockRes() {
   return res as unknown as Response;
 }
 
-describe('ok()', () => {
+describe('sendOk()', () => {
   it('returns success: true with data', () => {
-    const result = ok({ items: [] });
-    expect(result.success).toBe(true);
-    expect(result.data).toEqual({ items: [] });
-    expect(result.error).toBeNull();
+    const res = mockRes();
+    sendOk(res, { items: [] });
+    const body = (res.json as jest.Mock).mock.calls[0][0];
+    expect(body.success).toBe(true);
+    expect(body.data).toEqual({ items: [] });
+    expect(body.error).toBeNull();
   });
 
   it('includes pagination when provided', () => {
+    const res = mockRes();
     const pagination = { page: 1, limit: 20, total: 100, totalPages: 5 };
-    const result = ok({ items: [] }, { pagination });
-    expect(result.pagination).toEqual(pagination);
+    sendOk(res, { items: [] }, { pagination });
+    const body = (res.json as jest.Mock).mock.calls[0][0];
+    expect(body.pagination).toEqual(pagination);
   });
 
   it('sets pagination to null when not provided', () => {
-    const result = ok({ ready: true });
-    expect(result.pagination).toBeNull();
+    const res = mockRes();
+    sendOk(res, { ready: true });
+    const body = (res.json as jest.Mock).mock.calls[0][0];
+    expect(body.pagination).toBeNull();
+  });
+
+  it('defaults to HTTP 200', () => {
+    const res = mockRes();
+    sendOk(res, {});
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+
+  it('uses provided status code', () => {
+    const res = mockRes();
+    sendOk(res, {}, { status: 201 });
+    expect(res.status).toHaveBeenCalledWith(201);
   });
 });
 
