@@ -5,7 +5,7 @@ import { cosineSimilarity } from "../lib/cosine";
 
 const EMBEDDING_MODEL = "text-embedding-3-small";
 const BATCH_SIZE = 20;
-const MIN_SIMILARITY_SCORE = 0.25;
+const MIN_SIMILARITY_SCORE = 0.35;
 
 class VectorStore {
     private entries: VectorEntry[] = [];
@@ -23,10 +23,12 @@ class VectorStore {
         for (let i = 0; i < publications.length; i += BATCH_SIZE) {
             const batch = publications.slice(i, i + BATCH_SIZE);
 
-            // Embed title + category together for richer semantic signal.
+            // Embed title + category + project together for richer semantic signal.
             // A search for "success story" should match docs categorised as "Success Stories"
             // even when their title alone is a generic "Case Study: ACME".
-            const inputs = batch.map((p) => `${p.title} ${p.category}`);
+            // Including project name ensures project-name queries (e.g. "America") match
+            // publications that belong to that project even when the title doesn't mention it.
+            const inputs = batch.map((p) => `${p.title} ${p.category} ${p.project}`);
 
             const response = await withRetry(
                 () =>

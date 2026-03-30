@@ -137,16 +137,17 @@ describe("semanticSearch", () => {
     });
 
     describe("query normalisation", () => {
-        it("punctuation-stripped queries share the same string cache entry", async () => {
+        it("punctuation is preserved in the cache key (near-duplicates handled by vector cache)", async () => {
             (cacheService.lookupString as jest.Mock).mockReturnValueOnce(null);
             await semanticSearch("help");
             expect(cacheService.storeString).toHaveBeenCalledWith("help", mockSearchResults);
 
-            (cacheService.lookupString as jest.Mock).mockReturnValueOnce(mockSearchResults);
-            const result = await semanticSearch("help!");
-            expect(cacheService.lookupString).toHaveBeenLastCalledWith("help");
-            expect(result.cacheHit).toBe(true);
-            expect(vectorStore.embedText).toHaveBeenCalledTimes(1);
+            // "help!" has a different string cache key — no false hit
+            (cacheService.lookupString as jest.Mock).mockReturnValueOnce(null);
+            await semanticSearch("help!");
+            expect(cacheService.lookupString).toHaveBeenLastCalledWith("help!");
+            // Both calls embed — the vector cache (tested separately) handles near-duplicates
+            expect(vectorStore.embedText).toHaveBeenCalledTimes(2);
         });
 
         it("uppercase and lowercase of the same query share the same string cache entry", async () => {

@@ -5,7 +5,7 @@ import { SearchResponse } from '../types';
 
 /**
  * @param includeDeleted - When true, search includes deleted publications
- *   ("recycle bin" mode). Cached results are keyed separately per mode.
+ *   ("recycle bin" mode). Recycle bin searches bypass the cache entirely.
  */
 export async function semanticSearch(
   query: string,
@@ -13,9 +13,12 @@ export async function semanticSearch(
 ): Promise<SearchResponse> {
   const start = Date.now();
 
-  // Normalise before embedding — "Client Testimonial" and "client testimonial"
-  // must produce the same vector so the cache can match them.
-  const normalizedQuery = query.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
+  // Normalise to lowercase for consistent caching and embedding.
+  // Punctuation is preserved — the model handles it correctly, and stripping it
+  // risks false cache hits (e.g. "C++" → "c") and degrades accuracy for
+  // hyphenated or apostrophe-containing queries. Near-duplicate queries like
+  // "help" and "help!" are handled by the vector similarity cache instead.
+  const normalizedQuery = query.toLowerCase().trim();
 
   // Fast path: exact string match skips the embedding call entirely.
   // Only used for standard searches — recycle bin results are never cached.
