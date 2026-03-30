@@ -26,17 +26,17 @@ export const STABLE_STALE_TIME = Infinity;
 // ─── Initialising screen ─────────────────────────────────────────────────────
 
 export const STARTUP_STAGE_LABELS: Record<string, string> = {
-  connecting:   'Connecting to server...',
-  initialising: 'Starting up...',
-  sanitising:   'Healing legacy data with AI...',
-  embedding:    'Building semantic search index...',
+    connecting: "Connecting to server...",
+    initialising: "Starting up...",
+    sanitising: "Healing legacy data with AI...",
+    embedding: "Building semantic search index...",
 };
 
 export const STARTUP_STAGE_ORDER = [
-  'connecting',
-  'initialising',
-  'sanitising',
-  'embedding',
+    "connecting",
+    "initialising",
+    "sanitising",
+    "embedding",
 ] as const;
 
 // ─── Category styling ─────────────────────────────────────────────────────────
@@ -44,32 +44,32 @@ export const STARTUP_STAGE_ORDER = [
 // colour from the palette. Works on any dataset without hardcoding category names.
 
 const CATEGORY_BADGE_PALETTE = [
-  'bg-violet-100 text-violet-700',
-  'bg-blue-100 text-blue-700',
-  'bg-amber-100 text-amber-700',
-  'bg-emerald-100 text-emerald-700',
-  'bg-pink-100 text-pink-700',
-  'bg-cyan-100 text-cyan-700',
-  'bg-orange-100 text-orange-700',
-  'bg-indigo-100 text-indigo-700',
+    "bg-violet-100 text-violet-700",
+    "bg-blue-100 text-blue-700",
+    "bg-amber-100 text-amber-700",
+    "bg-emerald-100 text-emerald-700",
+    "bg-pink-100 text-pink-700",
+    "bg-cyan-100 text-cyan-700",
+    "bg-orange-100 text-orange-700",
+    "bg-indigo-100 text-indigo-700",
 ] as const;
 
 const CATEGORY_DOT_PALETTE = [
-  'bg-violet-400',
-  'bg-blue-400',
-  'bg-amber-400',
-  'bg-emerald-400',
-  'bg-pink-400',
-  'bg-cyan-400',
-  'bg-orange-400',
-  'bg-indigo-400',
+    "bg-violet-400",
+    "bg-blue-400",
+    "bg-amber-400",
+    "bg-emerald-400",
+    "bg-pink-400",
+    "bg-cyan-400",
+    "bg-orange-400",
+    "bg-indigo-400",
 ] as const;
 
 /** Simple deterministic hash — same string always returns the same index */
 function categoryHash(category: string): number {
-  return category
-    .split('')
-    .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return category
+        .split("")
+        .reduce((acc, char) => acc + char.charCodeAt(0), 0);
 }
 
 /**
@@ -78,8 +78,10 @@ function categoryHash(category: string): number {
  * Unknown categories get a colour from the palette, never a grey fallback.
  */
 export function getCategoryStyle(category: string): string {
-  if (!category) return 'bg-gray-100 text-gray-500';
-  return CATEGORY_BADGE_PALETTE[categoryHash(category) % CATEGORY_BADGE_PALETTE.length];
+    if (!category) return "bg-gray-100 text-gray-500";
+    return CATEGORY_BADGE_PALETTE[
+        categoryHash(category) % CATEGORY_BADGE_PALETTE.length
+    ];
 }
 
 /**
@@ -87,13 +89,15 @@ export function getCategoryStyle(category: string): string {
  * Used in sidebar filter — same colour as the badge for that category.
  */
 export function getCategoryDot(category: string): string {
-  if (!category) return 'bg-gray-300';
-  return CATEGORY_DOT_PALETTE[categoryHash(category) % CATEGORY_DOT_PALETTE.length];
+    if (!category) return "bg-gray-300";
+    return CATEGORY_DOT_PALETTE[
+        categoryHash(category) % CATEGORY_DOT_PALETTE.length
+    ];
 }
 
 export const STATUS_STYLES: Record<string, string> = {
-  published: 'bg-emerald-50 text-emerald-600 border border-emerald-200',
-  draft:     'bg-yellow-50 text-yellow-600 border border-yellow-200',
-  archived:  'bg-gray-50 text-gray-500 border border-gray-200',
-  deleted:   'bg-red-50 text-red-400 border border-red-200',
+    published: "bg-emerald-50 text-emerald-600 border border-emerald-200",
+    draft: "bg-yellow-50 text-yellow-600 border border-yellow-200",
+    archived: "bg-gray-50 text-gray-500 border border-gray-200",
+    deleted: "bg-red-50 text-red-400 border border-red-200",
 };

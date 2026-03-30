@@ -6,20 +6,20 @@ import { PublicationList } from "./PublicationList";
 import { SortSelect } from "./SortSelect";
 
 const BROWSE_SORT_OPTIONS = [
-  { value: 'date-desc',   label: 'Newest first' },
-  { value: 'date-asc',    label: 'Oldest first' },
-  { value: 'title-asc',   label: 'Title A–Z' },
-  { value: 'title-desc',  label: 'Title Z–A' },
-  { value: 'project-asc', label: 'Project A–Z' },
-  { value: 'status',      label: 'Status' },
+    { value: "date-desc", label: "Newest first" },
+    { value: "date-asc", label: "Oldest first" },
+    { value: "title-asc", label: "Title A-Z" },
+    { value: "title-desc", label: "Title Z-A" },
+    { value: "project-asc", label: "Project A-Z" },
+    { value: "status", label: "Status" },
 ];
 
 const SEARCH_SORT_OPTIONS = [
-  { value: 'relevance',  label: 'Relevance' },
-  { value: 'date-desc',  label: 'Newest first' },
-  { value: 'date-asc',   label: 'Oldest first' },
-  { value: 'title-asc',  label: 'Title A–Z' },
-  { value: 'title-desc', label: 'Title Z–A' },
+    { value: "relevance", label: "Relevance" },
+    { value: "date-desc", label: "Newest first" },
+    { value: "date-asc", label: "Oldest first" },
+    { value: "title-asc", label: "Title A-Z" },
+    { value: "title-desc", label: "Title Z-A" },
 ];
 
 interface Props {

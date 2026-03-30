@@ -1,7 +1,11 @@
-import { openai } from '../lib/openai';
-import { withRetry } from '../lib/retry';
-import { cleanedPublicationsResponseSchema, mappingsSchema, rawPublicationArraySchema } from '../schemas';
-import type { Mappings, RawPublication, Publication } from '../types';
+import { openai } from "../lib/openai";
+import { withRetry } from "../lib/retry";
+import {
+    cleanedPublicationsResponseSchema,
+    mappingsSchema,
+    rawPublicationArraySchema,
+} from "../schemas";
+import type { Mappings, RawPublication, Publication } from "../types";
 
 // ─── Pass 1: Discover canonical names from raw unique values ─────────────────
 
@@ -61,84 +65,120 @@ Each item: { "id": string, "title": string, "project": string, "category": strin
 `.trim();
 
 async function discoverMappings(rawDocs: RawPublication[]): Promise<Mappings> {
-  const uniqueProjects = Array.from(new Set(rawDocs.map((d) => d.project_name)));
-  const uniqueCategories = Array.from(
-    new Set(rawDocs.map((d) => d.category ?? 'null'))
-  );
+    const uniqueProjects = Array.from(
+        new Set(rawDocs.map((d) => d.project_name)),
+    );
+    const uniqueCategories = Array.from(
+        new Set(rawDocs.map((d) => d.category ?? "null")),
+    );
 
-  console.log(
-    `  [Pass 1] Clustering ${uniqueProjects.length} project variants, ` +
-    `${uniqueCategories.length} category variants...`
-  );
+    console.log(
+        `  [Pass 1] Clustering ${uniqueProjects.length} project variants, ` +
+            `${uniqueCategories.length} category variants...`,
+    );
 
-  const response = await withRetry(
-    () => openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      temperature: 0,
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: CLUSTERING_SYSTEM_PROMPT },
-        { role: 'user', content: JSON.stringify({ project_names: uniqueProjects, categories: uniqueCategories }) },
-      ],
-    }),
-    { label: 'Sanitizer Pass 1' }
-  );
+    const response = await withRetry(
+        () =>
+            openai.chat.completions.create({
+                model: "gpt-4o-mini",
+                temperature: 0,
+                response_format: { type: "json_object" },
+                messages: [
+                    { role: "system", content: CLUSTERING_SYSTEM_PROMPT },
+                    {
+                        role: "user",
+                        content: JSON.stringify({
+                            project_names: uniqueProjects,
+                            categories: uniqueCategories,
+                        }),
+                    },
+                ],
+            }),
+        { label: "Sanitizer Pass 1" },
+    );
 
-  const raw = response.choices[0].message.content;
-  if (!raw) throw new Error('[Sanitizer] Pass 1: empty response from OpenAI');
+    const raw = response.choices[0].message.content;
+    if (!raw) throw new Error("[Sanitizer] Pass 1: empty response from OpenAI");
 
-  const parsed = mappingsSchema.parse(JSON.parse(raw));
+    const parsed = mappingsSchema.parse(JSON.parse(raw));
 
-  // Log the discovered mappings — impressive demo moment
-  const canonicalProjects = Array.from(new Set(Object.values(parsed.project_mapping)));
-  const canonicalCategories = Array.from(new Set(Object.values(parsed.category_mapping)));
+    // Log the discovered mappings — impressive demo moment
+    const canonicalProjects = Array.from(
+        new Set(Object.values(parsed.project_mapping)),
+    );
+    const canonicalCategories = Array.from(
+        new Set(Object.values(parsed.category_mapping)),
+    );
 
-  console.log(`  [Pass 1] Discovered ${canonicalProjects.length} canonical projects:`);
-  canonicalProjects.forEach((canon) => {
-    const variants = Object.entries(parsed.project_mapping)
-      .filter(([, v]) => v === canon)
-      .map(([k]) => k);
-    console.log(`    "${variants.join('", "')}" → "${canon}"`);
-  });
+    console.log(
+        `  [Pass 1] Discovered ${canonicalProjects.length} canonical projects:`,
+    );
+    canonicalProjects.forEach((canon) => {
+        const variants = Object.entries(parsed.project_mapping)
+            .filter(([, v]) => v === canon)
+            .map(([k]) => k);
+        console.log(`    "${variants.join('", "')}" → "${canon}"`);
+    });
 
-  console.log(`  [Pass 1] Discovered ${canonicalCategories.length} canonical categories:`);
-  canonicalCategories.forEach((canon) => {
-    const variants = Object.entries(parsed.category_mapping)
-      .filter(([, v]) => v === canon)
-      .map(([k]) => k);
-    console.log(`    "${variants.join('", "')}" → "${canon}"`);
-  });
+    console.log(
+        `  [Pass 1] Discovered ${canonicalCategories.length} canonical categories:`,
+    );
+    canonicalCategories.forEach((canon) => {
+        const variants = Object.entries(parsed.category_mapping)
+            .filter(([, v]) => v === canon)
+            .map(([k]) => k);
+        console.log(`    "${variants.join('", "')}" → "${canon}"`);
+    });
 
-  return parsed;
+    return parsed;
 }
 
 async function cleanDocuments(
-  prepped: Array<{ id: string; title: string; project_name: string; category: string }>,
-  mappings: Mappings
-): Promise<Array<{ id: string; title: string; project: string; category: string }>> {
-  console.log(`  [Pass 2] Cleaning ${prepped.length} publication titles...`);
+    prepped: Array<{
+        id: string;
+        title: string;
+        project_name: string;
+        category: string;
+    }>,
+    mappings: Mappings,
+): Promise<
+    Array<{ id: string; title: string; project: string; category: string }>
+> {
+    console.log(`  [Pass 2] Cleaning ${prepped.length} publication titles...`);
 
-  // withRetry wraps both the API call and the Zod parse — if the model returns
-  // a malformed response, ZodError has no .status so withRetry will retry the
-  // whole block (re-call the model) rather than surfacing a cryptic parse failure.
-  const { publications } = await withRetry(async () => {
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      temperature: 0,
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: CLEANING_SYSTEM_PROMPT },
-        { role: 'user', content: JSON.stringify({ ...mappings, publications: prepped }) },
-      ],
-    });
+    // withRetry wraps both the API call and the Zod parse — if the model returns
+    // a malformed response, ZodError has no .status so withRetry will retry the
+    // whole block (re-call the model) rather than surfacing a cryptic parse failure.
+    const { publications } = await withRetry(
+        async () => {
+            const response = await openai.chat.completions.create({
+                model: "gpt-4o-mini",
+                temperature: 0,
+                response_format: { type: "json_object" },
+                messages: [
+                    { role: "system", content: CLEANING_SYSTEM_PROMPT },
+                    {
+                        role: "user",
+                        content: JSON.stringify({
+                            ...mappings,
+                            publications: prepped,
+                        }),
+                    },
+                ],
+            });
 
-    const raw = response.choices[0].message.content;
-    if (!raw) throw new Error('[Sanitizer] Pass 2: empty response from OpenAI');
+            const raw = response.choices[0].message.content;
+            if (!raw)
+                throw new Error(
+                    "[Sanitizer] Pass 2: empty response from OpenAI",
+                );
 
-    return cleanedPublicationsResponseSchema.parse(JSON.parse(raw));
-  }, { label: 'Sanitizer Pass 2' });
+            return cleanedPublicationsResponseSchema.parse(JSON.parse(raw));
+        },
+        { label: "Sanitizer Pass 2" },
+    );
 
-  return publications;
+    return publications;
 }
 
 // ─── Public API ──────────────────────────────────────────────────────────────
@@ -148,51 +188,59 @@ async function cleanDocuments(
  * Catches malformed seed data at the boundary rather than failing deep in a service.
  */
 export function parseRawPublications(data: unknown): RawPublication[] {
-  return rawPublicationArraySchema.parse(data);
+    return rawPublicationArraySchema.parse(data);
 }
 
 export async function sanitizePublications(
-  rawDocs: RawPublication[]
+    rawDocs: RawPublication[],
 ): Promise<Publication[]> {
-  console.log(`\n[Sanitizer] Starting sanitisation of ${rawDocs.length} publications...`);
-
-  // Count and log data quality issues found — useful for observability
-  const nullTitles = rawDocs.filter((d) => !d.title?.trim()).length;
-  const nullCategories = rawDocs.filter((d) => !d.category).length;
-  if (nullTitles > 0) console.log(`  [Pre-process] ${nullTitles} null/empty titles → "Untitled Document"`);
-  if (nullCategories > 0) console.log(`  [Pre-process] ${nullCategories} null categories → will be inferred`);
-
-  // Pre-process in TypeScript: handle nulls before any LLM call
-  const prepped = rawDocs.map((doc) => ({
-    id: doc.id,
-    title: doc.title?.trim() || 'Untitled Document',
-    project_name: doc.project_name,
-    category: doc.category ?? 'null',
-  }));
-
-  const mappings = await discoverMappings(rawDocs);
-  const cleaned = await cleanDocuments(prepped, mappings);
-
-  if (cleaned.length !== rawDocs.length) {
-    throw new Error(
-      `[Sanitizer] Count mismatch: expected ${rawDocs.length}, got ${cleaned.length}`
+    console.log(
+        `\n[Sanitizer] Starting sanitisation of ${rawDocs.length} publications...`,
     );
-  }
 
-  const cleanedMap = new Map(cleaned.map((c) => [c.id, c]));
+    // Count and log data quality issues found — useful for observability
+    const nullTitles = rawDocs.filter((d) => !d.title?.trim()).length;
+    const nullCategories = rawDocs.filter((d) => !d.category).length;
+    if (nullTitles > 0)
+        console.log(
+            `  [Pre-process] ${nullTitles} null/empty titles → "Untitled Document"`,
+        );
+    if (nullCategories > 0)
+        console.log(
+            `  [Pre-process] ${nullCategories} null categories → will be inferred`,
+        );
 
-  const result = rawDocs.map((doc): Publication => {
-    const clean = cleanedMap.get(doc.id);
-    return {
-      id: doc.id,
-      title: clean?.title ?? doc.title ?? 'Untitled Document',
-      project: clean?.project ?? doc.project_name,
-      category: clean?.category ?? 'Uncategorised',
-      created_at: doc.created_at,
-      status: doc.status,
-    };
-  });
+    // Pre-process in TypeScript: handle nulls before any LLM call
+    const prepped = rawDocs.map((doc) => ({
+        id: doc.id,
+        title: doc.title?.trim() || "Untitled Document",
+        project_name: doc.project_name,
+        category: doc.category ?? "null",
+    }));
 
-  console.log(`[Sanitizer] Complete.\n`);
-  return result;
+    const mappings = await discoverMappings(rawDocs);
+    const cleaned = await cleanDocuments(prepped, mappings);
+
+    if (cleaned.length !== rawDocs.length) {
+        throw new Error(
+            `[Sanitizer] Count mismatch: expected ${rawDocs.length}, got ${cleaned.length}`,
+        );
+    }
+
+    const cleanedMap = new Map(cleaned.map((c) => [c.id, c]));
+
+    const result = rawDocs.map((doc): Publication => {
+        const clean = cleanedMap.get(doc.id);
+        return {
+            id: doc.id,
+            title: clean?.title ?? doc.title ?? "Untitled Document",
+            project: clean?.project ?? doc.project_name,
+            category: clean?.category ?? "Uncategorised",
+            created_at: doc.created_at,
+            status: doc.status,
+        };
+    });
+
+    console.log(`[Sanitizer] Complete.\n`);
+    return result;
 }

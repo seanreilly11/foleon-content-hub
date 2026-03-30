@@ -1,6 +1,12 @@
 import { openai } from "../lib/openai";
 import { withRetry } from "../lib/retry";
-import { Publication, VectorEntry, SearchResult, BrowseSort, STATUS_VALUES } from "../types";
+import {
+    Publication,
+    VectorEntry,
+    SearchResult,
+    BrowseSort,
+    STATUS_VALUES,
+} from "../types";
 import { cosineSimilarity } from "../lib/cosine";
 
 const EMBEDDING_MODEL = "text-embedding-3-small";
@@ -31,7 +37,9 @@ class VectorStore {
             // even when their title alone is a generic "Case Study: ACME".
             // Including project name ensures project-name queries (e.g. "America") match
             // publications that belong to that project even when the title doesn't mention it.
-            const inputs = batch.map((p) => `${p.title} ${p.category} ${p.project}`);
+            const inputs = batch.map(
+                (p) => `${p.title} ${p.category} ${p.project}`,
+            );
 
             const response = await withRetry(
                 () =>
@@ -135,17 +143,20 @@ class VectorStore {
 
         // Derived from STATUS_VALUES — adding a new status requires updating only the const.
         const STATUS_ORDER = Object.fromEntries(
-            STATUS_VALUES.map((s, i) => [s, i])
-        ) as Record<Publication['status'], number>;
-        const sorters: Record<BrowseSort, (a: Publication, b: Publication) => number> = {
-            'date-desc':   (a, b) => b.created_at.localeCompare(a.created_at),
-            'date-asc':    (a, b) => a.created_at.localeCompare(b.created_at),
-            'title-asc':   (a, b) => a.title.localeCompare(b.title),
-            'title-desc':  (a, b) => b.title.localeCompare(a.title),
-            'project-asc': (a, b) => a.project.localeCompare(b.project),
-            'status':      (a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status],
+            STATUS_VALUES.map((s, i) => [s, i]),
+        ) as Record<Publication["status"], number>;
+        const sorters: Record<
+            BrowseSort,
+            (a: Publication, b: Publication) => number
+        > = {
+            "date-desc": (a, b) => b.created_at.localeCompare(a.created_at),
+            "date-asc": (a, b) => a.created_at.localeCompare(b.created_at),
+            "title-asc": (a, b) => a.title.localeCompare(b.title),
+            "title-desc": (a, b) => b.title.localeCompare(a.title),
+            "project-asc": (a, b) => a.project.localeCompare(b.project),
+            status: (a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status],
         };
-        publications.sort(sorters[opts.sort ?? 'date-desc']);
+        publications.sort(sorters[opts.sort ?? "date-desc"]);
 
         const total = publications.length;
         const totalPages = Math.ceil(total / opts.limit);

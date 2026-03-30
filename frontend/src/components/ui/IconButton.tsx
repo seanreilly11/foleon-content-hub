@@ -1,14 +1,14 @@
-import React from 'react';
+import React from "react";
 
 interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  'aria-label': string; // required — icon-only buttons must have accessible labels
+    "aria-label": string; // required — icon-only buttons must have accessible labels
 }
 
 export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
-  ({ className = '', children, ...props }, ref) => (
-    <button
-      ref={ref}
-      className={`
+    ({ className = "", children, ...props }, ref) => (
+        <button
+            ref={ref}
+            className={`
         inline-flex items-center justify-center rounded-lg p-1.5
         text-gray-400 hover:text-gray-600 hover:bg-gray-100 cursor-pointer
         disabled:opacity-30 disabled:cursor-not-allowed
@@ -16,11 +16,11 @@ export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
         focus-visible:ring-brand-500 focus-visible:ring-offset-1
         ${className}
       `}
-      {...props}
-    >
-      {children}
-    </button>
-  )
+            {...props}
+        >
+            {children}
+        </button>
+    ),
 );
 
-IconButton.displayName = 'IconButton';
+IconButton.displayName = "IconButton";

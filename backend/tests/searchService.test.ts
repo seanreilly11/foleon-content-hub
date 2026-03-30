@@ -132,7 +132,9 @@ describe("semanticSearch", () => {
 
         it("uses the lowercased query as the string cache key", async () => {
             await semanticSearch("SUCCESS STORY");
-            expect(cacheService.lookupString).toHaveBeenCalledWith("success story");
+            expect(cacheService.lookupString).toHaveBeenCalledWith(
+                "success story",
+            );
         });
     });
 
@@ -140,7 +142,10 @@ describe("semanticSearch", () => {
         it("punctuation is preserved in the cache key (near-duplicates handled by vector cache)", async () => {
             (cacheService.lookupString as jest.Mock).mockReturnValueOnce(null);
             await semanticSearch("help");
-            expect(cacheService.storeString).toHaveBeenCalledWith("help", mockSearchResults);
+            expect(cacheService.storeString).toHaveBeenCalledWith(
+                "help",
+                mockSearchResults,
+            );
 
             // "help!" has a different string cache key — no false hit
             (cacheService.lookupString as jest.Mock).mockReturnValueOnce(null);

@@ -1,50 +1,50 @@
-import { z } from 'zod';
-import { paginationSchema } from '../schemas';
+import { z } from "zod";
+import { paginationSchema } from "../schemas";
 
-const DEV_API_BASE_URL = 'http://localhost:3001';
+const DEV_API_BASE_URL = "http://localhost:3001";
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || DEV_API_BASE_URL;
 
 export class ApiError extends Error {
-  status: number;
-  serverMessage: string;
-  code?: string;
+    status: number;
+    serverMessage: string;
+    code?: string;
 
-  constructor(status: number, serverMessage: string, code?: string) {
-    super(`HTTP ${status}: ${serverMessage}`);
-    this.name = 'ApiError';
-    this.status = status;
-    this.serverMessage = serverMessage;
-    this.code = code;
-  }
+    constructor(status: number, serverMessage: string, code?: string) {
+        super(`HTTP ${status}: ${serverMessage}`);
+        this.name = "ApiError";
+        this.status = status;
+        this.serverMessage = serverMessage;
+        this.code = code;
+    }
 }
 
 // Internal envelope schema — built dynamically around each data schema.
 // Never exported — callers only ever see the unwrapped payload.
 const apiErrorSchema = z.object({
-  message: z.string(),
-  code: z.string().optional(),
+    message: z.string(),
+    code: z.string().optional(),
 });
 
 function envelopeSchema<T extends z.ZodTypeAny>(dataSchema: T) {
-  return z.discriminatedUnion('success', [
-    z.object({
-      success: z.literal(true),
-      data: dataSchema,
-      pagination: paginationSchema.nullable(),
-      error: z.null(),
-    }),
-    z.object({
-      success: z.literal(false),
-      data: z.null(),
-      pagination: z.null(),
-      error: apiErrorSchema,
-    }),
-  ]);
+    return z.discriminatedUnion("success", [
+        z.object({
+            success: z.literal(true),
+            data: dataSchema,
+            pagination: paginationSchema.nullable(),
+            error: z.null(),
+        }),
+        z.object({
+            success: z.literal(false),
+            data: z.null(),
+            pagination: z.null(),
+            error: apiErrorSchema,
+        }),
+    ]);
 }
 
 export interface ApiResult<T> {
-  data: T;
-  pagination: z.infer<typeof paginationSchema> | null;
+    data: T;
+    pagination: z.infer<typeof paginationSchema> | null;
 }
 
 /**
@@ -55,36 +55,36 @@ export interface ApiResult<T> {
  * On success: unwraps and returns { data, pagination } — envelope is gone.
  */
 async function parseResponse<T extends z.ZodTypeAny>(
-  res: Response,
-  dataSchema: T
+    res: Response,
+    dataSchema: T,
 ): Promise<ApiResult<z.infer<T>>> {
-  // Gate 1 — HTTP level
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new ApiError(
-      res.status,
-      body?.error?.message ?? body?.error ?? res.statusText,
-      body?.error?.code
-    );
-  }
+    // Gate 1 — HTTP level
+    if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new ApiError(
+            res.status,
+            body?.error?.message ?? body?.error ?? res.statusText,
+            body?.error?.code,
+        );
+    }
 
-  const json = await res.json();
+    const json = await res.json();
 
-  // Gate 2 — Envelope level
-  if (!json.success) {
-    throw new ApiError(
-      res.status,
-      json.error?.message ?? 'Unknown error',
-      json.error?.code
-    );
-  }
+    // Gate 2 — Envelope level
+    if (!json.success) {
+        throw new ApiError(
+            res.status,
+            json.error?.message ?? "Unknown error",
+            json.error?.code,
+        );
+    }
 
-  // Gate 3 — Data schema validation
-  const parsed = envelopeSchema(dataSchema).parse(json);
+    // Gate 3 — Data schema validation
+    const parsed = envelopeSchema(dataSchema).parse(json);
 
-  // Gate 2 already threw for success: false — safe to cast to the success shape.
-  // TS can't narrow through the generic envelopeSchema wrapper without a runtime branch.
-  return parsed as unknown as ApiResult<z.infer<T>>;
+    // Gate 2 already threw for success: false — safe to cast to the success shape.
+    // TS can't narrow through the generic envelopeSchema wrapper without a runtime branch.
+    return parsed as unknown as ApiResult<z.infer<T>>;
 }
 
 /**
@@ -94,20 +94,20 @@ async function parseResponse<T extends z.ZodTypeAny>(
  * // returns { data: { items: Publication[] }, pagination: Pagination | null }
  */
 export async function apiGet<T extends z.ZodTypeAny>(
-  path: string,
-  params: Record<string, string> | undefined,
-  dataSchema: T,
-  options?: { headers?: Record<string, string>; signal?: AbortSignal }
+    path: string,
+    params: Record<string, string> | undefined,
+    dataSchema: T,
+    options?: { headers?: Record<string, string>; signal?: AbortSignal },
 ): Promise<ApiResult<z.infer<T>>> {
-  const url = new URL(`${BASE_URL}${path}`);
-  if (params) url.search = new URLSearchParams(params).toString();
+    const url = new URL(`${BASE_URL}${path}`);
+    if (params) url.search = new URLSearchParams(params).toString();
 
-  const res = await fetch(url.toString(), {
-    headers: options?.headers,
-    signal: options?.signal,
-  });
+    const res = await fetch(url.toString(), {
+        headers: options?.headers,
+        signal: options?.signal,
+    });
 
-  return parseResponse(res, dataSchema);
+    return parseResponse(res, dataSchema);
 }
 
 /**
@@ -117,20 +117,20 @@ export async function apiGet<T extends z.ZodTypeAny>(
  * // returns { data: { items: SearchResult[], cacheHit: boolean, latencyMs: number }, pagination: null }
  */
 export async function apiPost<TBody, T extends z.ZodTypeAny>(
-  path: string,
-  body: TBody,
-  dataSchema: T,
-  options?: { headers?: Record<string, string>; signal?: AbortSignal }
+    path: string,
+    body: TBody,
+    dataSchema: T,
+    options?: { headers?: Record<string, string>; signal?: AbortSignal },
 ): Promise<ApiResult<z.infer<T>>> {
-  const res = await fetch(`${BASE_URL}${path}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
-    body: JSON.stringify(body),
-    signal: options?.signal,
-  });
+    const res = await fetch(`${BASE_URL}${path}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            ...options?.headers,
+        },
+        body: JSON.stringify(body),
+        signal: options?.signal,
+    });
 
-  return parseResponse(res, dataSchema);
+    return parseResponse(res, dataSchema);
 }

@@ -99,30 +99,31 @@ App runs on `http://localhost:5173`.
 
 Returns the paginated, healed publication list.
 
-| Query param | Type | Default | Description |
-|---|---|---|---|
-| `page` | number | 1 | Page number (1-indexed) |
-| `limit` | number | 20 | Results per page (max 200) |
-| `project` | string | — | Filter by canonical project name |
-| `category` | string | — | Filter by canonical category |
+| Query param | Type   | Default | Description                      |
+| ----------- | ------ | ------- | -------------------------------- |
+| `page`      | number | 1       | Page number (1-indexed)          |
+| `limit`     | number | 20      | Results per page (max 200)       |
+| `project`   | string | —       | Filter by canonical project name |
+| `category`  | string | —       | Filter by canonical category     |
 
 **Response**
+
 ```json
 {
-  "data": [
-    {
-      "id": "fol_001",
-      "title": "Client Testimonial Alpha",
-      "project": "Marketing",
-      "category": "Success Stories",
-      "created_at": "2024-01-15T09:30:00Z",
-      "status": "draft"
-    }
-  ],
-  "total": 150,
-  "page": 1,
-  "limit": 20,
-  "totalPages": 8
+    "data": [
+        {
+            "id": "fol_001",
+            "title": "Client Testimonial Alpha",
+            "project": "Marketing",
+            "category": "Success Stories",
+            "created_at": "2024-01-15T09:30:00Z",
+            "status": "draft"
+        }
+    ],
+    "total": 150,
+    "page": 1,
+    "limit": 20,
+    "totalPages": 8
 }
 ```
 
@@ -131,11 +132,13 @@ Returns the paginated, healed publication list.
 Semantic search over all publication titles and categories.
 
 **Request body**
+
 ```json
 { "query": "developer guide for authentication" }
 ```
 
 **Response**
+
 ```json
 {
   "results": [
@@ -213,6 +216,7 @@ cd backend && npm run dev
 ```
 
 Watch the console for:
+
 - Discovered project name mappings (e.g. `MARKETING_2024` → `Marketing`)
 - Embedding progress (`20/150 embedded`, `40/150 embedded`, …)
 - `Server ready` confirmation
