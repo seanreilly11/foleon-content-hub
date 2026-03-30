@@ -13,17 +13,19 @@ interface StringEntry {
   timestamp: number;
 }
 
-class CacheService {
+export class CacheService {
   private cache: CacheEntry[] = [];
   private stringCache: Map<string, StringEntry> = new Map();
 
+  // ─── Vector cache ────────────────────────────────────────────────────────────
+  // Handles near-duplicate queries — different text, near-identical embedding.
+  // e.g. "help" already cached, "help!" misses string cache but hits here.
+  // Still requires an embedding API call; only the vector search is skipped.
+
   lookup(queryVector: number[]): SearchResult[] | null {
     const now = Date.now();
-
     for (const entry of this.cache) {
-      // Evict expired entries on access rather than running a background sweep
       if (now - entry.timestamp > CACHE_TTL_MS) continue;
-
       if (cosineSimilarity(queryVector, entry.queryVector) >= SIMILARITY_THRESHOLD) {
         return entry.results;
       }
@@ -33,16 +35,20 @@ class CacheService {
 
   store(queryVector: number[], results: SearchResult[]): void {
     const now = Date.now();
-    // Purge expired entries before checking capacity — prevents them from
+    // Purge all expired entries before checking capacity — prevents them from
     // triggering premature FIFO eviction of still-valid entries.
     this.cache = this.cache.filter((e) => now - e.timestamp <= CACHE_TTL_MS);
     if (this.cache.length >= MAX_CACHE_SIZE) {
       this.cache.shift(); // FIFO eviction of oldest valid entry
     }
-    this.cache.push({ queryVector, results, timestamp: now });
+    // Store a copy — prevents external mutation from corrupting the cached entry.
+    this.cache.push({ queryVector, results: [...results], timestamp: now });
   }
 
-  /** Exact string lookup — checked before embedding to avoid unnecessary API calls. */
+  // ─── String cache ────────────────────────────────────────────────────────────
+  // Fast path: exact normalised query match skips the embedding API call entirely.
+  // This is the primary cache — the vector cache is a fallback for near-duplicates.
+
   lookupString(normalizedQuery: string): SearchResult[] | null {
     const entry = this.stringCache.get(normalizedQuery);
     if (!entry) return null;
@@ -53,10 +59,25 @@ class CacheService {
     return entry.results;
   }
 
-  /** Store results keyed by exact normalised query string. */
   storeString(normalizedQuery: string, results: SearchResult[]): void {
-    this.stringCache.set(normalizedQuery, { results, timestamp: Date.now() });
+    const now = Date.now();
+    // Purge all expired entries — consistent with vector cache eviction strategy.
+    for (const [key, entry] of this.stringCache) {
+      if (now - entry.timestamp > CACHE_TTL_MS) {
+        this.stringCache.delete(key);
+      }
+    }
+    // Only evict for new keys — updating an existing key doesn't grow the cache.
+    if (!this.stringCache.has(normalizedQuery) && this.stringCache.size >= MAX_CACHE_SIZE) {
+      // FIFO eviction — Map preserves insertion order.
+      const firstKey = this.stringCache.keys().next().value;
+      if (firstKey !== undefined) this.stringCache.delete(firstKey);
+    }
+    // Store a copy — prevents external mutation from corrupting the cached entry.
+    this.stringCache.set(normalizedQuery, { results: [...results], timestamp: now });
   }
+
+  // ─── Shared ──────────────────────────────────────────────────────────────────
 
   /** Invalidate all cached results. Call after data refresh. */
   clear(): void {
@@ -64,8 +85,9 @@ class CacheService {
     this.stringCache.clear();
   }
 
+  /** Total number of live entries across both caches. */
   size(): number {
-    return this.cache.length;
+    return this.cache.length + this.stringCache.size;
   }
 }
 
