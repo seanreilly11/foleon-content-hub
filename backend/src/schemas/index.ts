@@ -1,5 +1,10 @@
 import { z } from 'zod';
 
+// ─── Shared constants ────────────────────────────────────────────────────────
+
+export const STATUS_VALUES = ['published', 'draft', 'archived', 'deleted'] as const;
+const statusSchema = z.enum(STATUS_VALUES);
+
 // ─── Raw data (from JSON file) ───────────────────────────────────────────────
 
 export const rawPublicationSchema = z.object({
@@ -7,8 +12,8 @@ export const rawPublicationSchema = z.object({
   project_name: z.string(),
   title: z.string().nullable(),
   category: z.string().nullable(),
-  created_at: z.string(),
-  status: z.enum(['published', 'draft', 'archived', 'deleted']),
+  created_at: z.string().datetime(),
+  status: statusSchema,
 });
 
 export const rawPublicationArraySchema = z.array(rawPublicationSchema);
@@ -20,8 +25,8 @@ export const publicationSchema = z.object({
   title: z.string(),
   project: z.string(),
   category: z.string(),
-  created_at: z.string(),
-  status: z.enum(['published', 'draft', 'archived', 'deleted']),
+  created_at: z.string().datetime(),
+  status: statusSchema,
 });
 
 export const searchResultSchema = z.object({
@@ -81,8 +86,9 @@ export const searchRequestSchema = z.object({
 
 // ─── Response shapes ─────────────────────────────────────────────────────────
 
+// Matches the HTTP response body shape from POST /api/search.
 export const searchResponseSchema = z.object({
-  results: z.array(searchResultSchema),
+  items: z.array(searchResultSchema),
   cacheHit: z.boolean(),
   latencyMs: z.number(),
 });

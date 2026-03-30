@@ -15,8 +15,8 @@ router.get('/', (req: Request, res: Response) => {
 
   const page = Math.max(1, parseInt(req.query.page as string) || 1);
   const limit = Math.min(MAX_PAGE_LIMIT, Math.max(1, parseInt(req.query.limit as string) || DEFAULT_PAGE_LIMIT));
-  const project = req.query.project as string | undefined;
-  const category = req.query.category as string | undefined;
+  const project = (req.query.project as string | undefined)?.trim() || undefined;
+  const category = (req.query.category as string | undefined)?.trim() || undefined;
   const sortParam = req.query.sort as string | undefined;
   const sort: BrowseSort = BROWSE_SORT_VALUES.includes(sortParam as BrowseSort)
     ? (sortParam as BrowseSort)

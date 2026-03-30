@@ -25,13 +25,15 @@ export const metaDataSchema = z.object({
 
 // ─── Publications ─────────────────────────────────────────────────────────────
 
+export const STATUS_VALUES = ['published', 'draft', 'archived', 'deleted'] as const;
+
 export const publicationSchema = z.object({
   id: z.string(),
   title: z.string(),
   project: z.string(),
   category: z.string(),
-  created_at: z.string(),
-  status: z.enum(['published', 'draft', 'archived', 'deleted']),
+  created_at: z.string().datetime(),
+  status: z.enum(STATUS_VALUES),
 });
 
 export const publicationsDataSchema = z.object({
@@ -53,10 +55,10 @@ export const searchDataSchema = z.object({
 
 // ─── Request schemas ──────────────────────────────────────────────────────────
 
-// Mirrors the backend searchRequestSchema — keep in sync if the contract changes.
+// Mirrors the backend searchRequestSchema — must be kept in sync.
 export const searchRequestSchema = z.object({
-  query: z.string(),
-  includeDeleted: z.boolean(),
+  query: z.string().trim().min(1).max(500),
+  includeDeleted: z.boolean().default(false),
 });
 
 // ─── Sorting ─────────────────────────────────────────────────────────────────

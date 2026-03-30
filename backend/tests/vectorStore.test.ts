@@ -44,6 +44,32 @@ describe('VectorStore', () => {
       expect(freshStore.isReady()).toBe(false);
     });
 
+    it('isReady() returns false during a rebuild — prevents concurrent access to partial store', async () => {
+      // First build — store becomes ready
+      (openai.embeddings.create as jest.Mock).mockResolvedValue(
+        mockEmbeddingResponse(mockPublications.length)
+      );
+      await vectorStore.build(mockPublications);
+      expect(vectorStore.isReady()).toBe(true);
+
+      // Second build — hold the embedding promise open so we can inspect mid-build
+      let resolveEmbedding!: (value: unknown) => void;
+      (openai.embeddings.create as jest.Mock).mockReturnValue(
+        new Promise((resolve) => { resolveEmbedding = resolve; })
+      );
+
+      const buildPromise = vectorStore.build(mockPublications);
+
+      // isReady() must be false while the rebuild is in progress
+      expect(vectorStore.isReady()).toBe(false);
+
+      // Unblock the embedding and let the build complete
+      resolveEmbedding(mockEmbeddingResponse(mockPublications.length));
+      await buildPromise;
+
+      expect(vectorStore.isReady()).toBe(true);
+    });
+
     it('embeds all publications in batches', async () => {
       (openai.embeddings.create as jest.Mock).mockResolvedValue(
         mockEmbeddingResponse(mockPublications.length)

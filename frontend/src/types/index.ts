@@ -9,4 +9,4 @@ export type {
   SearchSort,
 } from '../schemas';
 
-export { BROWSE_SORT_VALUES, SEARCH_SORT_VALUES } from '../schemas';
+export { BROWSE_SORT_VALUES, SEARCH_SORT_VALUES, STATUS_VALUES } from '../schemas';

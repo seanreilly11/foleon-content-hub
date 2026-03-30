@@ -15,6 +15,9 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
     return sendError(res, 401, 'Unauthorised', 'UNAUTHORISED');
   }
 
+  // NOTE: This re-sanitises and re-embeds the same bundled publications.raw.json.
+  // It does not fetch new data. Use it when sanitisation or embedding produced
+  // bad results and you want to force a clean re-run without restarting the server.
   console.log('\n[Refresh] Manual refresh triggered...');
   const start = Date.now();
 

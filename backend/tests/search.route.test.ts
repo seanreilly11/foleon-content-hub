@@ -21,7 +21,7 @@ describe('POST /api/search', () => {
   beforeEach(() => {
     (vectorStore.isReady as jest.Mock).mockReturnValue(true);
     (semanticSearch as jest.Mock).mockResolvedValue({
-      results: mockSearchResults,
+      items: mockSearchResults,
       cacheHit: false,
       latencyMs: 120,
     });
@@ -94,7 +94,7 @@ describe('POST /api/search', () => {
 
   it('returns cacheHit: true when cache hit occurs', async () => {
     (semanticSearch as jest.Mock).mockResolvedValue({
-      results: mockSearchResults,
+      items: mockSearchResults,
       cacheHit: true,
       latencyMs: 12,
     });

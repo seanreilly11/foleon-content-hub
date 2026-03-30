@@ -80,7 +80,7 @@ describe("semanticSearch", () => {
 
         it("returns the search results", async () => {
             const result = await semanticSearch("success story");
-            expect(result.results).toEqual(mockSearchResults);
+            expect(result.items).toEqual(mockSearchResults);
         });
     });
 

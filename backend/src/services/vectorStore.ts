@@ -1,6 +1,6 @@
 import { openai } from "../lib/openai";
 import { withRetry } from "../lib/retry";
-import { Publication, VectorEntry, SearchResult, BrowseSort } from "../types";
+import { Publication, VectorEntry, SearchResult, BrowseSort, STATUS_VALUES } from "../types";
 import { cosineSimilarity } from "../lib/cosine";
 
 const EMBEDDING_MODEL = "text-embedding-3-small";
@@ -17,6 +17,9 @@ class VectorStore {
         console.log(
             `[VectorStore] Embedding ${publications.length} publications in batches of ${BATCH_SIZE}...`,
         );
+        // Mark not ready during rebuild so concurrent requests don't operate on
+        // an empty or partially-built store.
+        this.built = false;
         this.entries = [];
         const start = Date.now();
 
@@ -130,9 +133,10 @@ class VectorStore {
             );
         }
 
-        const STATUS_ORDER: Record<Publication['status'], number> = {
-            published: 0, draft: 1, archived: 2, deleted: 3,
-        };
+        // Derived from STATUS_VALUES — adding a new status requires updating only the const.
+        const STATUS_ORDER = Object.fromEntries(
+            STATUS_VALUES.map((s, i) => [s, i])
+        ) as Record<Publication['status'], number>;
         const sorters: Record<BrowseSort, (a: Publication, b: Publication) => number> = {
             'date-desc':   (a, b) => b.created_at.localeCompare(a.created_at),
             'date-asc':    (a, b) => a.created_at.localeCompare(b.created_at),

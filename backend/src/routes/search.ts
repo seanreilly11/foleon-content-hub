@@ -19,8 +19,8 @@ router.post(
     const { query, includeDeleted } = req.body as SearchRequest;
 
     try {
-      const { results, cacheHit, latencyMs } = await semanticSearch(query, includeDeleted);
-      return sendOk(res, { items: results, cacheHit, latencyMs });
+      const { items, cacheHit, latencyMs } = await semanticSearch(query, includeDeleted);
+      return sendOk(res, { items, cacheHit, latencyMs });
     } catch (err) {
       return next(err);
     }

@@ -105,4 +105,25 @@ describe('GET /api/publications', () => {
       expect.objectContaining({ sort: 'date-desc' }),
     );
   });
+
+  it('trims whitespace from project param before filtering', async () => {
+    await request(app).get('/api/publications?project=%20Marketing%20');
+    expect(vectorStore.listPublications).toHaveBeenCalledWith(
+      expect.objectContaining({ project: 'Marketing' }),
+    );
+  });
+
+  it('trims whitespace from category param before filtering', async () => {
+    await request(app).get('/api/publications?category=%20Technical+Guides%20');
+    expect(vectorStore.listPublications).toHaveBeenCalledWith(
+      expect.objectContaining({ category: 'Technical Guides' }),
+    );
+  });
+
+  it('treats whitespace-only project param as no filter', async () => {
+    await request(app).get('/api/publications?project=%20%20');
+    expect(vectorStore.listPublications).toHaveBeenCalledWith(
+      expect.objectContaining({ project: undefined }),
+    );
+  });
 });

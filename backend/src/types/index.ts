@@ -13,4 +13,4 @@ export type {
   BrowseSort,
 } from '../schemas';
 
-export { BROWSE_SORT_VALUES } from '../schemas';
+export { BROWSE_SORT_VALUES, STATUS_VALUES } from '../schemas';
